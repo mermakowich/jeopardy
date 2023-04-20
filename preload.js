@@ -2,47 +2,14 @@
 const XLSX = require('xlsx');
 const domain = require("domain");
 
-let currentCost = 0
-
-const setPlayersInGameWindow = async function(players) {
-    let playersFrame = document.querySelector('.players-frame')
-        for (let [key, value] of Object.entries(players)) {
-            let playerCardTemplate = document.querySelector('#player-card-template').content
-            let playerCard = playerCardTemplate.querySelector('div')
-            let clonedPlayerCard = playerCard.cloneNode(true)
-            clonedPlayerCard.querySelector('.player-name').textContent = key
-            clonedPlayerCard.querySelector('.player-score').textContent = value
-
-            playersFrame.appendChild(clonedPlayerCard)
-        }
-}
-
-const setPlayersInQuestionWindow = async function(players) {
-    console.log(players)
-    let playersGameFrame = document.querySelector('.players-game-frame')
-        for (let key of Object.keys(players)) {
-            let playerQuestionCardTemplate = document.querySelector('#player-question-card-template').content
-            let playerQuestionCard = playerQuestionCardTemplate.querySelector('div')
-            let clonedPlayerQuestionCard = playerQuestionCard.cloneNode(true)
-            clonedPlayerQuestionCard.querySelector('.player-name').textContent = key
-            clonedPlayerQuestionCard.querySelector('.ok-answer').addEventListener('click', (e) => {
-                players[key] += currentCost
-                console.log(players)
-            }) 
-            clonedPlayerQuestionCard.querySelector('.wrong-answer').addEventListener('click', (e) => {
-                players[key] -= currentCost
-                clonedPlayerQuestionCard.querySelector('.ok-answer').disabled = true
-                clonedPlayerQuestionCard.querySelector('.wrong-answer').disabled = true
-            }) 
-            playersGameFrame.appendChild(clonedPlayerQuestionCard)
-        }
-}
 
 window.addEventListener('DOMContentLoaded', () => {
     let questions = []
     let answers = []
-    let players = {}
-
+    let players = { "Денис": 0, "Игорь": 0, "Максим": 0 }
+    let currentRow = 0
+    let currentCost = 0
+    let timer = null
 
     let tabs = document.querySelectorAll("section")
     let questionDiv = document.querySelector(".question")
@@ -54,7 +21,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // dialog.showOpenDialog()
 
-    // временные обработчики кнопок 1-5 для переключения между экранами
+    // временные обработчики кнопок 1-5 для переключения между экранами и 6 для тестирования
     document.addEventListener("keypress", (e) => {
         if (e.key == "1") {
             tabs.forEach((tab) => {
@@ -85,6 +52,9 @@ window.addEventListener('DOMContentLoaded', () => {
                 tab.classList.remove("show")
             })
             tabs[4].classList.add("show")
+        }
+        if (e.key == "6") {
+            updatePlayersFrame(players)
         }
     })
 
@@ -225,9 +195,17 @@ window.addEventListener('DOMContentLoaded', () => {
                 let buttonTemplate = document.querySelector('#button-template').content.querySelector('button')
                 let clonedButton = buttonTemplate.cloneNode(true)
                 clonedButton.textContent = (j + 1) * 100
-                currenCost = (j + 1) * 100
                 clonedButton.dataset.row = i
                 clonedButton.addEventListener('click', (event) => {
+
+                    for (playerCard of document.querySelector('.players-game-frame').querySelectorAll('.player-question-card')) {
+                        playerCard.querySelectorAll('.answer-check-button').forEach((btn) => {
+                            btn.disabled = false
+                        })
+                    }
+
+                    currentRow = event.target.dataset.row
+                    currentCost = (j + 1) * 100
                     document.querySelector(".question-text").textContent = questions[event.target.dataset.row][event.target.textContent]
                     questionTimer.style = `width: 0px`
                     let start = Date.now()
@@ -280,27 +258,82 @@ window.addEventListener('DOMContentLoaded', () => {
             }
             field.insertBefore(clonedRow, field.children[0]);
         }
-        setPlayersInGameWindow(players)
-        setPlayersInQuestionWindow(players)
+        let playersFrame = document.querySelector('.players-frame')
+        for (let [key, value] of Object.entries(players)) {
+            let playerCardTemplate = document.querySelector('#player-card-template').content
+            let playerCard = playerCardTemplate.querySelector('div')
+            let clonedPlayerCard = playerCard.cloneNode(true)
+            clonedPlayerCard.querySelector('.player-name').textContent = key
+            clonedPlayerCard.querySelector('.player-score').textContent = value
+
+            playersFrame.appendChild(clonedPlayerCard)
+        }
+        let playersGameFrame = document.querySelector('.players-game-frame')
+        for (let key of Object.keys(players)) {
+            let playerQuestionCardTemplate = document.querySelector('#player-question-card-template').content
+            let playerQuestionCard = playerQuestionCardTemplate.querySelector('div')
+            let clonedPlayerQuestionCard = playerQuestionCard.cloneNode(true)
+            clonedPlayerQuestionCard.querySelector('.player-name').textContent = key
+            clonedPlayerQuestionCard.querySelector('.ok-answer').addEventListener('click', (e) => {
+                players[key] += currentCost
+                document.querySelector(".question-text").innerHTML = answers[currentRow][currentCost]
+                for (playerCard of document.querySelector('.players-game-frame').querySelectorAll('.player-question-card')) {
+                    playerCard.querySelectorAll('.answer-check-button').forEach((btn) => {
+                        btn.disabled = true
+                    })
+                }
+                for (let playerCard of document.querySelector(".players-frame").querySelectorAll(".player-card")) {
+                    playerCard.querySelector(".player-score").innerHTML = players[playerCard.querySelector(".player-name").innerHTML]
+                }
+            })
+            clonedPlayerQuestionCard.querySelector('.wrong-answer').addEventListener('click', (e) => {
+                players[key] -= currentCost
+                clonedPlayerQuestionCard.querySelector('.ok-answer').disabled = true
+                clonedPlayerQuestionCard.querySelector('.wrong-answer').disabled = true
+            })
+
+            playersGameFrame.appendChild(clonedPlayerQuestionCard)
+        }
     })
 
-    document.querySelector('.input-file input[type=file]').addEventListener('change', function (e) {
-        let file = this.files[0]
-        document.querySelector('.input-file-text').textContent = file.name
+    // Удалить код ниже, он для дебага
 
-        const reader = XLSX.readFile(file.path)
+    let file = 'test.xlsx'
+    document.querySelector('.input-file-text').textContent = file
+
+    const reader = XLSX.readFile(file)
 
 
-        const questions_temp = XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[0]])
-        questions_temp.forEach((res) => {
-            questions.push(res)
-        })
+    const questions_temp = XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[0]]).reverse()
+    questions_temp.forEach((res) => {
+        questions.push(res)
+    })
 
-        const answers_temp = XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[1]])
-        answers_temp.forEach((res) => {
-            answers.push(res)
-        })
-    });
+    const answers_temp = XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[1]]).reverse()
+    answers_temp.forEach((res) => {
+        answers.push(res)
+    })
+    startGameButton.click()
+
+    // Получение файла нормально, закомменчено для дебага
+
+    // document.querySelector('.input-file input[type=file]').addEventListener('change', function (e) {
+    //     let file = this.files[0]
+    //     document.querySelector('.input-file-text').textContent = file.name
+
+    //     const reader = XLSX.readFile(file.path)
+
+
+    //     const questions_temp = XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[0]]).reverse()
+    //     questions_temp.forEach((res) => {
+    //         questions.push(res)
+    //     })
+
+    //     const answers_temp = XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[1]]).reverse()
+    //     answers_temp.forEach((res) => {
+    //         answers.push(res)
+    //     })
+    // });
 
     let inputRangeField = document.querySelector(".input-range-field")
     inputRangeField.addEventListener("input", (e) => {
@@ -337,7 +370,7 @@ window.addEventListener('DOMContentLoaded', () => {
         let width = questionTimer.parentNode.offsetWidth
         let start = Date.now()
         let tick = width / (timerSeconds * 1000)
-        let timer = setInterval(() => {
+        timer = setInterval(() => {
             let timePassed = Date.now() - start
             if (timePassed <= timerSeconds * 1000) {
                 questionTimer.style = `width: ${tick * timePassed}px`

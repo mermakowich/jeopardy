@@ -3,6 +3,7 @@
     --game-color: #233A98;
     --yellow-color: #dfa44d;
     --white-color: rgb(219, 207, 207);
+    --black-color: rgb(0, 0, 0);
 }
 
 * {
@@ -212,7 +213,7 @@ section {
     text-align: center;
 }
 
-
+answer-check-button
 .logo-image {
     position: absolute;
     display: inline-block;
@@ -322,8 +323,7 @@ section {
 }
 
 .answer-check-button:disabled {
-    background-color: transparent;
-    border: 1px solid var(--white-color);
+    background-color: var(--white-color);
 }
 
 .answer-check-button:hover i {
