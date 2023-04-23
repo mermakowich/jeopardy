@@ -213,7 +213,6 @@ section {
     text-align: center;
 }
 
-answer-check-button
 .logo-image {
     position: absolute;
     display: inline-block;
@@ -836,8 +835,21 @@ section {
     border-radius: 5px;
 }
 
-@media screen and (max-width: 900px){
+@media screen and (max-width: 900px) {
     html {
         font-size: 7px;
     }
+}
+
+.question-image {
+    width: 100%;
+    max-height: 100%;
+}
+
+.back-to-field {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 999;
 }
