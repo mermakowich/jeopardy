@@ -842,8 +842,10 @@ section {
 }
 
 .question-image {
-    width: 100%;
-    max-height: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 auto;
+    max-height: 60vh;
 }
 
 .back-to-field {
