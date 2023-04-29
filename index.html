@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 
 <head>
     <meta charset="UTF-8">
@@ -74,49 +74,7 @@
             <form class="menu-sidebar load-game-sidebar">
                 <h3 class="sidebar-header">Загрузить игру</h3>
                 <ul class="save-game-list">
-                    <li class="save-game-item">
-                        <label class="save-game-label">
-                            <input type="radio" name="save-game" value="save-game-1" class="save-game-radio">Новая Игра
-                            1 (01.12.2024)
-                        </label>
-                    </li>
-                    <li class="save-game-item">
-                        <label class="save-game-label">
-                            <input type="radio" name="save-game" value="save-game-2" class="save-game-radio">Новая Игра
-                            11 (01.04.2024)
-                        </label>
-                    </li>
-                    <li class="save-game-item">
-                        <label class="save-game-label">
-                            <input type="radio" name="save-game" value="save-game-3" class="save-game-radio">Новая Игра
-                            цук (01.11.2024)
-                        </label>
-                    </li>
-                    <li class="save-game-item">
-                        <label class="save-game-label">
-                            <input type="radio" name="save-game" value="save-game-4" class="save-game-radio">Новая Игра
-                            3йцу (01.12.2324)
-                        </label>
-                    </li>
-                    <li class="save-game-item">
-                        <label class="save-game-label">
-                            <input type="radio" name="save-game" value="save-game-5" class="save-game-radio">Новая Игра
-                            12 (02.12.2024)
-                        </label>
-                    </li>
-                    <li class="save-game-item">
-                        <label class="save-game-label">
-                            <input type="radio" name="save-game" value="save-game-6" class="save-game-radio">Новая
-                            Иddddddddddddddddгра 12 (02.12.2024)
-                        </label>
-                    </li>
-                    <li class="save-game-item">
-                        <label class="save-game-label">
-                            <input type="radio" name="save-game" value="save-game-7" class="save-game-radio">Новая Игра
-                            12 (02.12.2024)
-                        </label>
-                    </li>
-
+                    
                 </ul>
                 <button type="submit" id="load-game-button" class="start-game-button">продолжить</button>
 
@@ -238,6 +196,13 @@
 			<button class="answer-check-button wrong-answer"><i class="fi-x"></i></button>
 		</div>
 	</template>
+    <template id="save-game-item-template">
+        <li class="save-game-item">
+            <label class="save-game-label">
+                <input type="radio" name="save-game" class="save-game-radio">
+            </label>
+        </li>
+    </template>
 </body>
 
 </html>
