@@ -13,23 +13,15 @@ window.addEventListener('DOMContentLoaded', () => {
     let currentRow = 0
     let currentCost = 0
     let timer = null
-    let gameBoard = [[0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0],]
-
-    fs.access("games.json", (e) => {
-        if (e) {
-            console.log("games.json exists")
-            fs.writeFileSync("games.json", JSON.stringify({}))
-        }
-    });
-
     let gameName = ''
-
     let filesExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'svg', 'raw', 'psd',]
+    let gameBoard =
+        [[0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],]
 
     let tabs = document.querySelectorAll("section")
     let questionDiv = document.querySelector(".question")
@@ -37,11 +29,30 @@ window.addEventListener('DOMContentLoaded', () => {
     let startFaqScreenButton = document.querySelector("#start-faq-screen-button")
     let startGameButton = document.querySelector("#start-new-game-button")
     let continueGameButton = document.querySelector("#load-game-button")
-    let timerSeconds = 10
     let backToFieldButton = document.querySelector("#back-to-field")
     let questionTimer = document.querySelector(".time-status")
+    let inputRangeField = document.querySelector(".input-range-field")
+    let sliderPages = document.querySelector(".slider-pages")
+    let prevButton = document.querySelector(".slider-prev-button")
+    let nextButton = document.querySelector(".slider-next-button")
+    let addPlayerButton = document.querySelector(".input-user-button")
+    let sliders = document.querySelectorAll(".faq-item")
+    let newGameFormSidebar = document.querySelector(".new-game-sidebar")
+    let loadGameFormSidebar = document.querySelector(".load-game-sidebar")
+    let newGameElements = document.querySelectorAll(".new-game-sidebar input, .new-game-sidebar button")
+    let loadGameElements = document.querySelectorAll(".load-game-sidebar input, .load-game-sidebar button")
 
-    // dialog.showOpenDialog()
+    let timerSeconds = 10
+    let currentSliderNumber = 0
+    sliderPages.textContent = `${currentSliderNumber + 1} / ${sliders.length}`
+
+    
+    fs.access("games.json", (e) => {
+        if (e) {
+            console.log("games.json exists")
+            fs.writeFileSync("games.json", JSON.stringify({}))
+        }
+    });
 
     // временные обработчики кнопок 1-5 для переключения между экранами и 6 для тестирования
     document.addEventListener("keypress", (e) => {
@@ -119,7 +130,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))[gameName]
             }
         })
-        
+
         players = gamesData['players']
         gameBoard = gamesData['gameBoard']
 
@@ -154,7 +165,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 clonedButton.dataset.row = i
                 if (gameBoard[questions.length - i - 1][j] == 1) {
                     clonedButton.disabled = true
-                } 
+                }
                 clonedButton.addEventListener('click', (event) => {
 
                     for (playerCard of document.querySelector('.players-game-frame').querySelectorAll('.player-question-card')) {
@@ -320,15 +331,6 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     })
 
-    let sliderPages = document.querySelector(".slider-pages")
-    let prevButton = document.querySelector(".slider-prev-button")
-    let nextButton = document.querySelector(".slider-next-button")
-    let addPlayerButton = document.querySelector(".input-user-button")
-    //let slider = document.querySelector(".faq-slider")
-    let sliders = document.querySelectorAll(".faq-item")
-    let currentSliderNumber = 0
-    sliderPages.textContent = `${currentSliderNumber + 1} / ${sliders.length}`
-
     addPlayerButton.addEventListener("click", (e) => {
         e.preventDefault()
         if (document.querySelector("#input-user-field").value.trim() !== "" &&
@@ -468,7 +470,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     currentRow = event.target.dataset.row
                     currentCost = (j + 1) * 100
                     gameBoard[questions.length - i - 1][j] = 1
-                    
+
 
                     gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))
                     gamesData[gameName]['gameBoard'] = gameBoard
@@ -630,32 +632,6 @@ window.addEventListener('DOMContentLoaded', () => {
         clearInterval(timer)
     })
 
-
-    // let xlsxFile = path.resolve('test files/test.xlsx')
-    // document.querySelector('.input-file-text').textContent = xlsxFile
-
-    // const reader = XLSX.readFile(xlsxFile)
-
-
-    // const questions_temp = XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[0]]).reverse()
-    // questions_temp.forEach((res) => {
-    //     questions.push(res)
-    // })
-
-    // const answers_temp = XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[1]]).reverse()
-    // answers_temp.forEach((res) => {
-    //     answers.push(res)
-    // })
-    // data = JSON.parse(fs.readFileSync(dataFile, 'utf-8'))
-    // data['questions'] = questions
-    // data['answers'] = answers
-
-    // fs.writeFileSync(dataFile, JSON.stringify(data))
-
-    // startGameButton.click()
-
-    // Получение файла нормально, закомменчено для дебага
-
     document.querySelector('.input-file input[type=file]').addEventListener('change', function (e) {
         xlsxFile = this.files[0]
         document.querySelector('.input-file-text').textContent = xlsxFile.name
@@ -674,18 +650,11 @@ window.addEventListener('DOMContentLoaded', () => {
         })
     });
 
-    let inputRangeField = document.querySelector(".input-range-field")
     inputRangeField.addEventListener("input", (e) => {
         let inputRangeValue = document.querySelector('.input-range-value')
         inputRangeValue.textContent = `${e.target.value} СЕК.`
     })
 
-
-
-    let newGameFormSidebar = document.querySelector(".new-game-sidebar")
-    let loadGameFormSidebar = document.querySelector(".load-game-sidebar")
-    let newGameElements = document.querySelectorAll(".new-game-sidebar input, .new-game-sidebar button")
-    let loadGameElements = document.querySelectorAll(".load-game-sidebar input, .load-game-sidebar button")
     newGameFormSidebar.addEventListener("click", (e) => {
         loadGameElements.forEach((el) => el.disabled = true)
         if (!e.target.classList.contains("active-sidebar") && e.target.classList.contains("menu-sidebar")) {
@@ -694,7 +663,9 @@ window.addEventListener('DOMContentLoaded', () => {
             newGameElements.forEach((el) => el.disabled = false)
         }
     })
+
     loadGameElements.forEach((el) => el.disabled = true)
+
     loadGameFormSidebar.addEventListener("click", (e) => {
         newGameElements.forEach((el) => el.disabled = true)
         if (!e.target.classList.contains("active-sidebar") && e.target.classList.contains("menu-sidebar")) {
