@@ -231,7 +231,7 @@ section {
 
 
 .faq {
-    height: 100vh;
+    /* height: 100vh; */
     display: flex;
     background-color: var(--game-color);
     color: var(--yellow-color);
@@ -854,4 +854,18 @@ section {
     left: 0;
     width: 100%;
     z-index: 999;
+}
+
+.back-to-menu-button {
+    display: block;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    border: 1px solid var(--white-color);
+    outline: none;
+    text-align: center;
+    background-color: transparent;
+    /* border-radius: 50%; */
+    transition: all 0.3s ease;
 }
