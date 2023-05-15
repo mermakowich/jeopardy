@@ -232,7 +232,10 @@ section {
 
 .faq {
     /* height: 100vh; */
+    padding: 100px 0 140px 0;
     display: flex;
+    /* align-items: strach; */
+    position: relative;
     background-color: var(--game-color);
     color: var(--yellow-color);
     justify-content: center;
@@ -241,6 +244,42 @@ section {
     text-align: center;
 
 }
+
+.faq-button {
+    display: block;
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 40px;
+    border: 1px solid var(--white-color);
+    color: var(--white-color);
+    outline: none;
+    text-align: center;
+    background-color: transparent;
+    border-radius: 10px;
+    font-size: 2rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.faq-back-button {
+    left: calc(50% - 120px);
+}
+
+.faq-start-game-button {
+    left: calc(50% + 20px);
+}
+
+.faq-button:hover {
+    background-color: var(--white-color);
+    color: var(--game-color);
+
+}
+
+
 
 section {
     background-color: var(--main-bg-color);
@@ -322,7 +361,11 @@ section {
 }
 
 .answer-check-button:disabled {
-    background-color: var(--white-color);
+    opacity: 50%;
+}
+
+.answer-check-button:hover:disabled {
+    background-color: transparent;
 }
 
 .answer-check-button:hover i {
@@ -333,12 +376,8 @@ section {
     color: var(--white-color);
 }
 
-.faq {
-    padding: 100px;
-    display: flex;
-    align-items: strach;
-    position: relative;
-
+.answer-check-button:hover:disabled i {
+    color: var(--yellow-color);
 }
 
 .faq-slider {
@@ -582,9 +621,6 @@ section {
     height: 0;
 }
 
-
-
-/* Hover/active */
 .input-file:hover .input-file-btn {
     background-color: var(--game-color);
 }
@@ -658,10 +694,6 @@ section {
     border: 1px solid var(--main-bg-color);
     padding: 0.9rem 2rem;
 }
-
-
-
-
 
 .input-user-button {
     font-size: 2rem;
@@ -797,6 +829,8 @@ section {
 .save-game-item {
     width: 100%;
     margin: 1rem 0;
+    display: flex;
+    align-items: center;
 }
 
 .save-game-radio {
@@ -811,6 +845,8 @@ section {
     border-radius: 5px;
     display: block;
     transition: 0.3s ease;
+    flex-grow: 1;
+
 }
 
 .save-game-label:focus-within {
@@ -853,19 +889,71 @@ section {
     top: 0;
     left: 0;
     width: 100%;
+    font-size: 3.5rem;
+    background-color: transparent;
+    color: var(--yellow-color);
+    outline: none;
+    border: 2px solid var(--yellow-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.2s ease;
     z-index: 999;
 }
 
-.back-to-menu-button {
-    display: block;
-    align-items: center;
+.back-to-field:hover {
+    color: var(--main-bg-color);
+    background-color: var(--white-color);
+    border: 2px solid var(--white-color);
+}
+
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: inline-block;
     justify-content: center;
-    width: 50px;
-    height: 50px;
-    border: 1px solid var(--white-color);
-    outline: none;
-    text-align: center;
+    align-items: center;
+    width: 35px;
+    height: 35px;
+    font-size: 2rem;
+    border: 1px solid var(--yellow-color);
+    color: var(--yellow-color);
     background-color: transparent;
-    /* border-radius: 50%; */
+    cursor: pointer;
+    border-radius: 5px;
+    z-index: 99;
+}
+
+.close-button i {
+    margin-top: -10px;
+    text-align: center;
+}
+
+.close-button:hover {
+    border: 1px solid var(--white-color);
+    color: var(--white-color);
+}
+
+.delete-save-game-button {
+    background-color: transparent;
+    border: 1px solid transparent;
+    font-size: 1.7rem;
+    outline: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    color: var(--white-color);
+    vertical-align: middle;
+    background-color: var(--main-bg-color);
     transition: all 0.3s ease;
+    border: 2px solid transparent;
+    margin-right: 5px;
+}
+
+.delete-save-game-button:hover {
+    background-color: var(--white-color);
+    color: var(--main-bg-color);
+    border: 2px solid var(--main-bg-color);
 }

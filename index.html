@@ -92,7 +92,7 @@
         <div class="question">
             <div class="question-frame">
                 <p class="question-text"></p>
-                <button class="back-to-field start-game-button" id="back-to-field">Вернуться к вопросам</button>
+                <button hidden="true" class="back-to-field" id="back-to-field">Вернуться к вопросам</button>
                 <div class="time-status"></div>
             </div>
             <div class="players-frame players-game-frame">
@@ -162,9 +162,12 @@
                 <span class="slider-pages">7/11</span>
             </ul>
             <button class="slider-button slider-next-button"><i class="fi-arrow-right"></i></button>
-            <button class="back-to-menu-button">назад</button>
+            <button class="faq-button faq-back-button" id="faq-back-button">Назад</button>
+            <button class="faq-button faq-start-game-button" id="faq-start-game-button">Играть</button>
         </div>
+      
     </section>
+    <button class="close-button" id="close-button"><i class="fi-x"></i></button>
     <!-- <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
     <script type="text/javascript" src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
     <script type="text/javascript" src="slick/slick.min.js"></script> -->
@@ -180,8 +183,7 @@
         <div class="row"></div>
     </template>
     <template id="user-item-template">
-        <li class="user-item"><span class="user-name"></span><button class="delete-user-button"><i
-                    class="fi-x"></i></button></li>
+        <li class="user-item"><span class="user-name"></span><button class="delete-user-button"><i class="fi-x"></i></button></li>
     </template>
     <template id="player-card-template">
         <div class="player-card">
@@ -200,7 +202,9 @@
         <li class="save-game-item">
             <label class="save-game-label">
                 <input type="radio" name="save-game" class="save-game-radio">
+                <!-- <input type="radio" name="save-game" class="save-game-radio"> -->
             </label>
+            <button class="delete-save-game-button"><i class="fi-x"></i></button>
         </li>
     </template>
 </body>
