@@ -16,18 +16,20 @@ window.addEventListener('DOMContentLoaded', () => {
             let clonedSaveGameItem = saveGameItem.cloneNode(true)
             let clonedInput = clonedSaveGameItem.querySelector('input')
             clonedInput.value = name
-            clonedSaveGameItem.querySelector('.save-game-label').innerHTML += `${name} (${games[name]['gameDate']})`
+            clonedSaveGameItem.dataset.gameName = name
+            clonedSaveGameItem.querySelector('.game-name').innerHTML = `${name} (${games[name]['gameDate']})`
             clonedSaveGameItem.querySelector('.delete-save-game-button').addEventListener("click", (e) => {
                 e.preventDefault()
-                if ("save-game-radio" === e.target.parentElement.classList.value) {
-                    // e.target.parentElement.parentElement.remove()
+                if ("save-game-item" === e.target.parentElement.classList.value) {
+                    e.target.parentElement.remove()
                     gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))
-                    console.log(e.target.parentElement.innerHTML)
-                    // delete gamesData[e.target.parentElement.innerHTML]
+                    delete gamesData[e.target.parentElement.dataset.gameName]
                     fs.writeFileSync('games.json', JSON.stringify(gamesData))
                 } else {
-                    // e.target.parentElement.parentElement.remove()
-                    // delete players[e.target.parentElement.parentElement.children[0].textContent]
+                    e.target.parentElement.parentElement.remove()
+                    gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))
+                    delete gamesData[e.target.parentElement.parentElement.dataset.gameName]
+                    fs.writeFileSync('games.json', JSON.stringify(gamesData))
                 }
             })
             document.querySelector('.save-game-list').appendChild(clonedSaveGameItem)
@@ -44,6 +46,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 questionTimer.style = `width: ${tick * timePassed}px`
             } else {
                 stopQuestionTimer()
+                clearInterval(timer)
                 backToFieldButton.style.visibility = 'visible'
                 for (playerCard of document.querySelector('.players-game-frame').querySelectorAll('.player-question-card')) {
                     playerCard.querySelectorAll('.answer-check-button').forEach((btn) => {
@@ -176,6 +179,7 @@ window.addEventListener('DOMContentLoaded', () => {
     let faqBackButton = document.querySelector("#faq-back-button")
     let faqStartGameButton = document.querySelector("#faq-start-game-button")
     let closeButton = document.querySelector("#close-button")
+    let endGameButton = document.querySelector('.end-game-button')
 
     let timerSeconds = 10
     let currentSliderNumber = 0
@@ -232,7 +236,6 @@ window.addEventListener('DOMContentLoaded', () => {
                 section_index = i
             }
         }
-        console.log(e.key)
         switch (e.key) {
             case "Escape":
                 switch (section_index) {
@@ -283,8 +286,10 @@ window.addEventListener('DOMContentLoaded', () => {
                 switch (section_index) {
                     case 3:
                         if (timerFlag) {
+                            clearInterval(timer)
                             startQuestionTimer(null, true, false)
                         } else {
+                            clearInterval(timer)
                             startQuestionTimer(null, true, true)
                         }
                         timerFlag = !timerFlag
@@ -380,6 +385,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 clonedTheme.children[0].textContent = questions[i]["THEME"]
                 clonedRow.appendChild(clonedTheme)
                 for (let j = 0; j < 5; j++) {
+                    clearInterval(timer)
                     let buttonTemplate = document.querySelector('#button-template').content.querySelector('button')
                     let clonedButton = buttonTemplate.cloneNode(true)
                     clonedButton.textContent = (j + 1) * 100
@@ -388,7 +394,6 @@ window.addEventListener('DOMContentLoaded', () => {
                         clonedButton.disabled = true
                     }
                     clonedButton.addEventListener('click', (event) => {
-
                         for (playerCard of document.querySelector('.players-game-frame').querySelectorAll('.player-question-card')) {
                             playerCard.querySelectorAll('.answer-check-button').forEach((btn) => {
                                 btn.disabled = false
@@ -399,7 +404,6 @@ window.addEventListener('DOMContentLoaded', () => {
                         currentRow = event.target.dataset.row
                         currentCost = (j + 1) * 100
                         gameBoard[questions.length - i - 1][j] = 1
-
 
                         gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))
                         gamesData[gameName]['gameBoard'] = gameBoard
@@ -415,6 +419,7 @@ window.addEventListener('DOMContentLoaded', () => {
                             document.querySelector(".question-text").textContent = ""
                             document.querySelector(".question-text").appendChild(img)
                         }
+                        clearInterval(timer)
                         startQuestionTimer(event, false, false)
                     })
                     clonedRow.appendChild(clonedButton)
@@ -669,6 +674,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     clonedButton.textContent = (j + 1) * 100
                     clonedButton.dataset.row = i
                     clonedButton.addEventListener('click', (event) => {
+                        clearInterval(timer)
                         stopQuestionTimer()
                         for (playerCard of document.querySelector('.players-game-frame').querySelectorAll('.player-question-card')) {
                             playerCard.querySelectorAll('.answer-check-button').forEach((btn) => {
@@ -695,6 +701,7 @@ window.addEventListener('DOMContentLoaded', () => {
                             document.querySelector(".question-text").textContent = ""
                             document.querySelector(".question-text").appendChild(img)
                         }
+                        startQuestionTimer(event, false, false)
                     })
                     clonedRow.appendChild(clonedButton)
                 }
@@ -799,7 +806,19 @@ window.addEventListener('DOMContentLoaded', () => {
             tab.classList.remove("show")
         })
         tabs[2].classList.add("show")
+        clearInterval(timer)
         stopQuestionTimer()
+    })
+
+    endGameButton.addEventListener('click', (e) => {
+        tabs.forEach((tab) => {
+            tab.classList.remove("show")
+        })
+        tabs[0].classList.add("show")
+
+        gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))
+        delete gamesData[gameName]
+        fs.writeFileSync('games.json', JSON.stringify(gamesData))
     })
 
     document.querySelector('.input-file input[type=file]').addEventListener('change', function (e) {

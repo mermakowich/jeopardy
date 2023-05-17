@@ -13,7 +13,7 @@
 </head>
 
 <body>
-    <section class="area show">
+    <section class="show area">
         <div class="main-menu">
             <div class="logo">
                 <h1 class="logo-title">Jeopardy<img src="images/idea.png" alt="idea" class="logo-image"></h1>
@@ -165,7 +165,47 @@
             <button class="faq-button faq-back-button" id="faq-back-button">Назад</button>
             <button class="faq-button faq-start-game-button" id="faq-start-game-button">Играть</button>
         </div>
-      
+
+    </section>
+    <section class="area">
+        <div class="win">
+            <div class="pedestal">
+                <div class="place">
+                    <p class="winner">Саrrrrrrва</p>
+                    <div class="second-place place">
+                        <h1 class="pedestal-text">2</h1>
+                    </div>
+                    <p class="winner">10000</p>
+                </div>
+                <div class="place">
+                    <p class="winner">Денeeeeeис</p>
+                    <div class="first-place place">
+                        <h1 class="pedestal-text">1</h1>
+                    </div>
+                    <p class="winner">22000</p>
+                </div>
+                <div class="place">
+                    <p class="winner">Игrrrrrорь</p>
+                    <div class="third-place place">
+                        <h1 class="pedestal-text">3</h1>
+                    </div>
+                    <p class="winner">5000</p>
+                </div>
+            </div>
+            <button class="end-game-button">Перейти в главное меню</button>
+        </div>
+        <ul class="circles">
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ul>
     </section>
     <button class="close-button" id="close-button"><i class="fi-x"></i></button>
     <!-- <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
@@ -183,7 +223,8 @@
         <div class="row"></div>
     </template>
     <template id="user-item-template">
-        <li class="user-item"><span class="user-name"></span><button class="delete-user-button"><i class="fi-x"></i></button></li>
+        <li class="user-item"><span class="user-name"></span><button class="delete-user-button"><i
+                    class="fi-x"></i></button></li>
     </template>
     <template id="player-card-template">
         <div class="player-card">
@@ -202,7 +243,7 @@
         <li class="save-game-item">
             <label class="save-game-label">
                 <input type="radio" name="save-game" class="save-game-radio">
-                <!-- <input type="radio" name="save-game" class="save-game-radio"> -->
+                <span class="game-name"></span>
             </label>
             <button class="delete-save-game-button"><i class="fi-x"></i></button>
         </li>
