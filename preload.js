@@ -63,7 +63,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     'gameName': gameName,
                     'xlsxPath': null,
                     'players': players,
-                    'gameBoard': null,
+                    'gameBoard': gameBoard,
                     'gameDate': null,
                     'timerSeconds': null
                 }
@@ -175,7 +175,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     'gameName': gameName,
                     'xlsxPath': null,
                     'players': players,
-                    'gameBoard': null,
+                    'gameBoard': gameBoard,
                     'gameDate': null,
                     'timerSeconds': null
                 }
@@ -224,7 +224,7 @@ window.addEventListener('DOMContentLoaded', () => {
                         'gameName': gameName,
                         'xlsxPath': null,
                         'players': players,
-                        'gameBoard': null,
+                        'gameBoard': gameBoard,
                         'gameDate': null,
                         'timerSeconds': null
                     }
@@ -286,6 +286,9 @@ window.addEventListener('DOMContentLoaded', () => {
                 let clonedButton = buttonTemplate.cloneNode(true)
                 clonedButton.textContent = (j + 1) * 100
                 clonedButton.dataset.row = i
+                if (gameBoard[questions.length - i - 1][j] == 1) {
+                    clonedButton.disabled = true
+                }
                 clonedButton.addEventListener('click', (event) => {
                     clearInterval(timer)
                     stopQuestionTimer()
@@ -298,7 +301,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     currentRow = event.target.dataset.row
                     currentCost = (j + 1) * 100
                     gameBoard[questions.length - i - 1][j] = 1
-
+                    
                     params = {
                         'gameName': gameName,
                         'xlsxPath': null,
@@ -323,7 +326,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 })
                 clonedRow.appendChild(clonedButton)
             }
-            field.insertBefore(clonedRow, field.children[0]);
+            field.insertBefore(clonedRow, field.children[0])
         }
     }
 
@@ -470,13 +473,6 @@ window.addEventListener('DOMContentLoaded', () => {
                         xlsxPath = ''
                         players = {}
                         gameName = ''
-                        gameBoard =
-                            [[0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0],]
                         fillSaveGame()
                         document.querySelector('.players-game-frame').innerHTML = ''
                         break
@@ -689,8 +685,11 @@ window.addEventListener('DOMContentLoaded', () => {
             alert('Выберите файл для загрузки!')
         } else if (gameName.trim() === '') {
             alert('Введите название игры!')
-        } else if (Object.keys(players).length < 2) {
+        } else if (players.length < 2) {
             alert('Введите минимум двух игроков')
+        } else if (gameName.trim() in JSON.parse(fs.readFileSync('games.json', 'utf-8'))) {
+            alert('Игра с таким названием уже существует!')
+            gameName = document.querySelector('#input-game-name-label').value = ""
         } else {
             timerSeconds = inputRangeField.value
             tabs.forEach((tab) => {

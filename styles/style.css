@@ -827,9 +827,33 @@ section {
 
 .save-game-item {
     width: 100%;
-    margin: 1rem 0;
+    padding: 1rem;
+    /* margin: 1rem 0; */
     display: flex;
+    transition: 0.3s ease;
+    border-radius: 5px;
+    flex-grow: 1;
     align-items: center;
+}
+
+.save-game-item:focus-within {
+    background-color: var(--game-color);
+}
+
+.save-game-item:focus-within>label>span {
+    color: var(--yellow-color);
+}
+
+.save-game-item:focus-within>button {
+    background-color: transparent;
+    color: var(--yellow-color);
+    border: 0px;
+}
+
+.save-game-item:focus-within>button:hover {
+    background-color: var(--yellow-color);
+    color: var(--main-bg-color);
+    border: 0px;
 }
 
 .save-game-radio {
@@ -847,12 +871,6 @@ section {
     flex-grow: 1;
 
 }
-
-.save-game-label:focus-within {
-    background-color: var(--game-color);
-    color: var(--yellow-color);
-}
-
 
 
 .save-game-list::-webkit-scrollbar {
@@ -940,15 +958,14 @@ section {
     border: 1px solid transparent;
     font-size: 1.7rem;
     outline: none;
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 36px;
     border-radius: 50%;
     color: var(--white-color);
     vertical-align: middle;
     background-color: var(--main-bg-color);
     transition: all 0.3s ease;
     border: 2px solid transparent;
-    margin-right: 5px;
 }
 
 .delete-save-game-button:hover {
@@ -984,12 +1001,12 @@ section {
 
 .second-place {
     height: 300px;
-    border: 2px solid  #c0c0c0;
+    border: 2px solid #c0c0c0;
 }
 
 .third-place {
     height: 200px;
-    border: 2px solid  #cd7f32;
+    border: 2px solid #cd7f32;
 }
 
 .win {
