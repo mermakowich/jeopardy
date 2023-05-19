@@ -22,14 +22,10 @@ window.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault()
                 if ("save-game-item" === e.target.parentElement.classList.value) {
                     e.target.parentElement.remove()
-                    gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))
-                    delete gamesData[e.target.parentElement.dataset.gameName]
-                    fs.writeFileSync('games.json', JSON.stringify(gamesData))
+                    deleteGameData(e.target.parentElement.dataset.gameName)
                 } else {
                     e.target.parentElement.parentElement.remove()
-                    gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))
-                    delete gamesData[e.target.parentElement.parentElement.dataset.gameName]
-                    fs.writeFileSync('games.json', JSON.stringify(gamesData))
+                    deleteGameData(e.target.parentElement.parentElement.dataset.gameName)
                 }
             })
             document.querySelector('.save-game-list').appendChild(clonedSaveGameItem)
@@ -63,9 +59,15 @@ window.addEventListener('DOMContentLoaded', () => {
                     document.querySelector(".question-text").textContent = ""
                     document.querySelector(".question-text").appendChild(img)
                 }
-                gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))
-                gamesData[gameName]['players'] = players
-                fs.writeFileSync('games.json', JSON.stringify(gamesData))
+                params = {
+                    'gameName': gameName,
+                    'xlsxPath': null,
+                    'players': players,
+                    'gameBoard': null,
+                    'gameDate': null,
+                    'timerSeconds': null
+                }
+                setGameData(params)
             }
         }, 1)
     })
@@ -132,12 +134,226 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const stopQuestionTimer = async () => {
         clearInterval(timer)
+        timerFlag = false
         pauseTime = 0
+    }
+
+    const setPlayersFrame = async () => {
+        let playersFrame = document.querySelector('.players-frame')
+        for (let [key, value] of Object.entries(players)) {
+            let playerCardTemplate = document.querySelector('#player-card-template').content
+            let playerCard = playerCardTemplate.querySelector('div')
+            let clonedPlayerCard = playerCard.cloneNode(true)
+            clonedPlayerCard.querySelector('.player-name').textContent = key
+            clonedPlayerCard.querySelector('.player-score').textContent = value
+
+            playersFrame.appendChild(clonedPlayerCard)
+        }
+    }
+
+    const setPlayersGameFrame = async () => {
+        let playersGameFrame = document.querySelector('.players-game-frame')
+        for (let key of Object.keys(players)) {
+            let playerQuestionCardTemplate = document.querySelector('#player-question-card-template').content
+            let playerQuestionCard = playerQuestionCardTemplate.querySelector('div')
+            let clonedPlayerQuestionCard = playerQuestionCard.cloneNode(true)
+            clonedPlayerQuestionCard.querySelector('.player-name').textContent = key
+            clonedPlayerQuestionCard.querySelector('.ok-answer').addEventListener('click', (e) => {
+                players[key] += currentCost
+                let answerText = answers[currentRow][currentCost]
+                if (!filesExtensions.includes(answerText.split(".")[answerText.split(".").length - 1])) {
+                    document.querySelector(".question-text").textContent = answerText
+                } else {
+                    let img = document.createElement('img')
+                    img.classList.add("question-image")
+                    img.src = xlsxPath + '/../files/' + answerText
+                    document.querySelector(".question-text").textContent = ""
+                    document.querySelector(".question-text").appendChild(img)
+                }
+
+                params = {
+                    'gameName': gameName,
+                    'xlsxPath': null,
+                    'players': players,
+                    'gameBoard': null,
+                    'gameDate': null,
+                    'timerSeconds': null
+                }
+                setGameData(params)
+
+                for (playerCard of document.querySelector('.players-game-frame').querySelectorAll('.player-question-card')) {
+                    playerCard.querySelectorAll('.answer-check-button').forEach((btn) => {
+                        btn.disabled = true
+                    })
+                }
+                for (let playerCard of document.querySelector(".players-frame").querySelectorAll(".player-card")) {
+                    playerCard.querySelector(".player-score").innerHTML = players[playerCard.querySelector(".player-name").innerHTML]
+                }
+                stopQuestionTimer()
+                backToFieldButton.style.visibility = 'visible'
+            })
+            clonedPlayerQuestionCard.querySelector('.wrong-answer').addEventListener('click', (e) => {
+                players[key] -= currentCost
+                clonedPlayerQuestionCard.querySelector('.ok-answer').disabled = true
+                clonedPlayerQuestionCard.querySelector('.wrong-answer').disabled = true
+                let btns = []
+                for (playerCard of document.querySelector('.players-game-frame').querySelectorAll('.player-question-card')) {
+                    playerCard.querySelectorAll('.answer-check-button').forEach((btn) => {
+                        btns.push(btn.disabled)
+                    })
+                }
+                if (btns.every((e) => { return e })) {
+                    stopQuestionTimer()
+                    backToFieldButton.style.visibility = 'visible'
+                    for (playerCard of document.querySelector('.players-game-frame').querySelectorAll('.player-question-card')) {
+                        playerCard.querySelectorAll('.answer-check-button').forEach((btn) => {
+                            btn.disabled = true
+                        })
+                    }
+                    let answerText = answers[currentRow][currentCost]
+                    if (!filesExtensions.includes(answerText.split(".")[answerText.split(".").length - 1])) {
+                        document.querySelector(".question-text").textContent = answerText
+                    } else {
+                        let img = document.createElement('img')
+                        img.classList.add("question-image")
+                        img.src = xlsxPath + '/../files/' + answerText
+                        document.querySelector(".question-text").textContent = ""
+                        document.querySelector(".question-text").appendChild(img)
+                    }
+                    params = {
+                        'gameName': gameName,
+                        'xlsxPath': null,
+                        'players': players,
+                        'gameBoard': null,
+                        'gameDate': null,
+                        'timerSeconds': null
+                    }
+                    setGameData(params)
+                }
+                for (let playerCard of document.querySelector(".players-frame").querySelectorAll(".player-card")) {
+                    playerCard.querySelector(".player-score").innerHTML = players[playerCard.querySelector(".player-name").innerHTML]
+                }
+            })
+
+            playersGameFrame.appendChild(clonedPlayerQuestionCard)
+        }
+    }
+
+    const getGameData = async (gameName) => {
+        gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))[gameName]
+        players = gamesData['players']
+        gameBoard = gamesData['gameBoard']
+        xlsxPath = gamesData['xlsxPath']
+        timerSeconds = gamesData['timerSeconds']
+    }
+
+    const setGameData = async (params) => {
+        let [gameName, currentXlsxPath, currentPlayers, currentGameBoard, currentGameDate, currentTimerSeconds] = Object.values(params)
+        gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))
+        if (!(gameName in gamesData)) {
+            gamesData[gameName] = {
+                'gameName': null,
+                'xlsxPath': null,
+                'players': null,
+                'gameBoard': null,
+                'gameDate': null,
+                'timerSeconds': null
+            }
+        }
+
+        if (currentXlsxPath != null) gamesData[gameName]['xlsxPath'] = currentXlsxPath
+        if (currentPlayers != null) gamesData[gameName]['players'] = currentPlayers
+        if (currentGameBoard != null) gamesData[gameName]['gameBoard'] = currentGameBoard
+        if (currentGameDate != null) gamesData[gameName]['gameDate'] = currentGameDate
+        if (currentTimerSeconds != null) gamesData[gameName]['timerSeconds'] = currentTimerSeconds
+        fs.writeFileSync('games.json', JSON.stringify(gamesData))
+    }
+
+    const fillQuestionButtons = async () => {
+        let field = document.querySelector('.game')
+
+        for (let i = 0; i < questions.length; i++) {
+            let rowTemplate = document.querySelector('#row-template').content
+            let themeTemplate = document.querySelector('#theme-template').content
+            let theme = themeTemplate.querySelector('div')
+            let row = rowTemplate.querySelector('div')
+            let clonedTheme = theme.cloneNode(true)
+            let clonedRow = row.cloneNode(true)
+            clonedTheme.children[0].textContent = questions[i]["THEME"]
+            clonedRow.appendChild(clonedTheme)
+            for (let j = 0; j < 5; j++) {
+                let buttonTemplate = document.querySelector('#button-template').content.querySelector('button')
+                let clonedButton = buttonTemplate.cloneNode(true)
+                clonedButton.textContent = (j + 1) * 100
+                clonedButton.dataset.row = i
+                clonedButton.addEventListener('click', (event) => {
+                    clearInterval(timer)
+                    stopQuestionTimer()
+                    for (playerCard of document.querySelector('.players-game-frame').querySelectorAll('.player-question-card')) {
+                        playerCard.querySelectorAll('.answer-check-button').forEach((btn) => {
+                            btn.disabled = false
+                        })
+                    }
+                    backToFieldButton.style.visibility = 'hidden'
+                    currentRow = event.target.dataset.row
+                    currentCost = (j + 1) * 100
+                    gameBoard[questions.length - i - 1][j] = 1
+
+                    params = {
+                        'gameName': gameName,
+                        'xlsxPath': null,
+                        'players': null,
+                        'gameBoard': gameBoard,
+                        'gameDate': null,
+                        'timerSeconds': timerSeconds
+                    }
+                    setGameData(params)
+
+                    let questionText = questions[event.target.dataset.row][event.target.textContent]
+                    if (!filesExtensions.includes(questionText.split(".")[questionText.split(".").length - 1])) {
+                        document.querySelector(".question-text").textContent = questionText
+                    } else {
+                        let img = document.createElement('img')
+                        img.classList.add("question-image")
+                        img.src = xlsxPath + '/../files/' + questionText
+                        document.querySelector(".question-text").textContent = ""
+                        document.querySelector(".question-text").appendChild(img)
+                    }
+                    startQuestionTimer(event, false, false)
+                })
+                clonedRow.appendChild(clonedButton)
+            }
+            field.insertBefore(clonedRow, field.children[0]);
+        }
+    }
+
+    const createGameWindow = async () => {
+        fillQuestionButtons()
+        setPlayersFrame()
+        setPlayersGameFrame()
+        closeButton.style = 'visibility: hidden'
+        document.querySelector('#input-game-name-label').value = ''
+        document.querySelector('.users-list').innerHTML = ''
+        document.querySelector('.input-game-name-label').value = ''
+        document.querySelector('.input-user-label').value = ''
+        document.querySelector('.input-file-text').innerHTML = ''
+    }
+
+    const setQuestions = async (path) => {
+        const reader = XLSX.readFile(path)
+        XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[0]]).reverse().forEach((res) => { questions.push(res) })
+        XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[1]]).reverse().forEach((res) => { answers.push(res) })
+    }
+
+    const deleteGameData = async (gameName) => {
+        gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))
+        delete gamesData[gameName]
+        fs.writeFileSync('games.json', JSON.stringify(gamesData))
     }
 
     let questions = []
     let answers = []
-    let xlsxFile = ''
+    let xlsxPath = ''
     let players = {}
     let currentRow = 0
     let currentCost = 0
@@ -146,9 +362,10 @@ window.addEventListener('DOMContentLoaded', () => {
     let circleTimer = null
     let timerFlag = false
     let timePassed = 0
-    let startTime = null
     let pauseTime = null
     let gameName = ''
+    let gameDate = null
+    let gamesData = null
     let filesExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'svg', 'raw', 'psd',]
     let gameBoard =
         [[0, 0, 0, 0, 0],
@@ -188,7 +405,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
     fs.access("games.json", (e) => {
         if (e) {
-            console.log("games.json exists")
             fs.writeFileSync("games.json", JSON.stringify({}))
         }
     });
@@ -251,7 +467,7 @@ window.addEventListener('DOMContentLoaded', () => {
                         document.querySelector('.game').innerHTML = '<div class="players-frame"></div>'
                         questions = []
                         answers = []
-                        xlsxFile = ''
+                        xlsxPath = ''
                         players = {}
                         gameName = ''
                         gameBoard =
@@ -338,13 +554,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
     continueGameButton.addEventListener("click", (e) => {
         e.preventDefault()
-
         let checkedGame = false
 
         document.querySelectorAll("[name=save-game]").forEach((e) => {
             if (e.checked) {
                 gameName = e.value
-                gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))[gameName]
                 checkedGame = true
             }
         })
@@ -354,168 +568,9 @@ window.addEventListener('DOMContentLoaded', () => {
                 tab.classList.remove("show")
             })
             tabs[2].classList.add("show")
-
-            players = gamesData['players']
-            gameBoard = gamesData['gameBoard']
-            xlsxPath = gamesData['xlsxPath']
-
-            timerSeconds = gamesData['timer']
-
-            const reader = XLSX.readFile(xlsxPath)
-
-            const questions_temp = XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[0]]).reverse()
-            questions_temp.forEach((res) => {
-                questions.push(res)
-            })
-
-            const answers_temp = XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[1]]).reverse()
-            answers_temp.forEach((res) => {
-                answers.push(res)
-            })
-
-            let field = document.querySelector('.game')
-
-            for (let i = 0; i < questions.length; i++) {
-                let rowTemplate = document.querySelector('#row-template').content
-                let themeTemplate = document.querySelector('#theme-template').content
-                let theme = themeTemplate.querySelector('div')
-                let row = rowTemplate.querySelector('div')
-                let clonedTheme = theme.cloneNode(true)
-                let clonedRow = row.cloneNode(true)
-                clonedTheme.children[0].textContent = questions[i]["THEME"]
-                clonedRow.appendChild(clonedTheme)
-                for (let j = 0; j < 5; j++) {
-                    clearInterval(timer)
-                    let buttonTemplate = document.querySelector('#button-template').content.querySelector('button')
-                    let clonedButton = buttonTemplate.cloneNode(true)
-                    clonedButton.textContent = (j + 1) * 100
-                    clonedButton.dataset.row = i
-                    if (gameBoard[questions.length - i - 1][j] == 1) {
-                        clonedButton.disabled = true
-                    }
-                    clonedButton.addEventListener('click', (event) => {
-                        for (playerCard of document.querySelector('.players-game-frame').querySelectorAll('.player-question-card')) {
-                            playerCard.querySelectorAll('.answer-check-button').forEach((btn) => {
-                                btn.disabled = false
-                            })
-                        }
-                        backToFieldButton.style.visibility = 'hidden'
-
-                        currentRow = event.target.dataset.row
-                        currentCost = (j + 1) * 100
-                        gameBoard[questions.length - i - 1][j] = 1
-
-                        gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))
-                        gamesData[gameName]['gameBoard'] = gameBoard
-                        fs.writeFileSync('games.json', JSON.stringify(gamesData))
-
-                        let questionText = questions[event.target.dataset.row][event.target.textContent]
-                        if (!filesExtensions.includes(questionText.split(".")[questionText.split(".").length - 1])) {
-                            document.querySelector(".question-text").textContent = questionText
-                        } else {
-                            let img = document.createElement('img')
-                            img.classList.add("question-image")
-                            img.src = xlsxPath + '/../files/' + questionText
-                            document.querySelector(".question-text").textContent = ""
-                            document.querySelector(".question-text").appendChild(img)
-                        }
-                        clearInterval(timer)
-                        startQuestionTimer(event, false, false)
-                    })
-                    clonedRow.appendChild(clonedButton)
-                }
-                field.insertBefore(clonedRow, field.children[0])
-            }
-            let playersFrame = document.querySelector('.players-frame')
-            for (let [key, value] of Object.entries(players)) {
-                let playerCardTemplate = document.querySelector('#player-card-template').content
-                let playerCard = playerCardTemplate.querySelector('div')
-                let clonedPlayerCard = playerCard.cloneNode(true)
-                clonedPlayerCard.querySelector('.player-name').textContent = key
-                clonedPlayerCard.querySelector('.player-score').textContent = value
-
-                playersFrame.appendChild(clonedPlayerCard)
-            }
-            let playersGameFrame = document.querySelector('.players-game-frame')
-            for (let key of Object.keys(players)) {
-                let playerQuestionCardTemplate = document.querySelector('#player-question-card-template').content
-                let playerQuestionCard = playerQuestionCardTemplate.querySelector('div')
-                let clonedPlayerQuestionCard = playerQuestionCard.cloneNode(true)
-                clonedPlayerQuestionCard.querySelector('.player-name').textContent = key
-                clonedPlayerQuestionCard.querySelector('.ok-answer').addEventListener('click', (e) => {
-                    players[key] += currentCost
-                    let answerText = answers[currentRow][currentCost]
-                    if (!filesExtensions.includes(answerText.split(".")[answerText.split(".").length - 1])) {
-                        document.querySelector(".question-text").textContent = answerText
-                    } else {
-                        console.log(xlsxFile.path)
-                        let img = document.createElement('img')
-                        img.classList.add("question-image")
-                        img.src = xlsxPath + '/../files/' + answerText
-                        document.querySelector(".question-text").textContent = ""
-                        document.querySelector(".question-text").appendChild(img)
-                    }
-
-                    gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))
-                    gamesData[gameName]['players'] = players
-                    fs.writeFileSync('games.json', JSON.stringify(gamesData))
-
-                    for (playerCard of document.querySelector('.players-game-frame').querySelectorAll('.player-question-card')) {
-                        playerCard.querySelectorAll('.answer-check-button').forEach((btn) => {
-                            btn.disabled = true
-                        })
-                    }
-                    for (let playerCard of document.querySelector(".players-frame").querySelectorAll(".player-card")) {
-                        playerCard.querySelector(".player-score").innerHTML = players[playerCard.querySelector(".player-name").innerHTML]
-                    }
-                    stopQuestionTimer()
-                    backToFieldButton.style.visibility = 'visible'
-                })
-                clonedPlayerQuestionCard.querySelector('.wrong-answer').addEventListener('click', (e) => {
-                    players[key] -= currentCost
-                    clonedPlayerQuestionCard.querySelector('.ok-answer').disabled = true
-                    clonedPlayerQuestionCard.querySelector('.wrong-answer').disabled = true
-                    let btns = []
-                    for (playerCard of document.querySelector('.players-game-frame').querySelectorAll('.player-question-card')) {
-                        playerCard.querySelectorAll('.answer-check-button').forEach((btn) => {
-                            btns.push(btn.disabled)
-                        })
-                    }
-                    if (btns.every((e) => { return e })) {
-                        stopQuestionTimer()
-                        backToFieldButton.style.visibility = 'visible'
-                        for (playerCard of document.querySelector('.players-game-frame').querySelectorAll('.player-question-card')) {
-                            playerCard.querySelectorAll('.answer-check-button').forEach((btn) => {
-                                btn.disabled = true
-                            })
-                        }
-                        let answerText = answers[currentRow][currentCost]
-                        if (!filesExtensions.includes(answerText.split(".")[answerText.split(".").length - 1])) {
-                            document.querySelector(".question-text").textContent = answerText
-                        } else {
-                            let img = document.createElement('img')
-                            img.classList.add("question-image")
-                            img.src = xlsxPath + '/../files/' + answerText
-                            document.querySelector(".question-text").textContent = ""
-                            document.querySelector(".question-text").appendChild(img)
-                        }
-                        gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))
-                        gamesData[gameName]['players'] = players
-                        fs.writeFileSync('games.json', JSON.stringify(gamesData))
-                    }
-                    for (let playerCard of document.querySelector(".players-frame").querySelectorAll(".player-card")) {
-                        playerCard.querySelector(".player-score").innerHTML = players[playerCard.querySelector(".player-name").innerHTML]
-                    }
-                })
-
-                playersGameFrame.appendChild(clonedPlayerQuestionCard)
-            }
-            closeButton.style = 'visibility: hidden'
-            document.querySelector('#input-game-name-label').value = ''
-            document.querySelector('.users-list').innerHTML = ''
-            document.querySelector('.input-game-name-label').value = ''
-            document.querySelector('.input-user-label').value = ''
-            document.querySelector('.input-file-text').innerHTML = ''
+            getGameData(gameName)
+            setQuestions(xlsxPath)
+            createGameWindow()
         } else {
             alert('Вы не выбрали игру')
         }
@@ -630,7 +685,7 @@ window.addEventListener('DOMContentLoaded', () => {
     startGameButton.addEventListener("click", (e) => {
         e.preventDefault()
         gameName = document.querySelector('#input-game-name-label').value
-        if (xlsxFile === '') {
+        if (xlsxPath === '') {
             alert('Выберите файл для загрузки!')
         } else if (gameName.trim() === '') {
             alert('Введите название игры!')
@@ -643,160 +698,17 @@ window.addEventListener('DOMContentLoaded', () => {
             })
             tabs[2].classList.add("show")
 
-            let field = document.querySelector('.game')
-
-            let data = {
-                'xlsxPath': path.resolve(xlsxFile.path),
+            params = {
+                'gameName': gameName,
+                'xlsxPath': path.resolve(xlsxPath),
                 'players': players,
                 'gameBoard': gameBoard,
                 'gameDate': (new Date()).toISOString().slice(0, 10).split('-').reverse().join('.'),
-                'timer': timerSeconds
+                'timerSeconds': timerSeconds
             }
+            setGameData(params)
 
-            xlsxPath = xlsxFile.path
-
-            gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))
-            gamesData[gameName] = data
-            fs.writeFileSync('games.json', JSON.stringify(gamesData))
-
-            for (let i = 0; i < questions.length; i++) {
-                let rowTemplate = document.querySelector('#row-template').content
-                let themeTemplate = document.querySelector('#theme-template').content
-                let theme = themeTemplate.querySelector('div')
-                let row = rowTemplate.querySelector('div')
-                let clonedTheme = theme.cloneNode(true)
-                let clonedRow = row.cloneNode(true)
-                clonedTheme.children[0].textContent = questions[i]["THEME"]
-                clonedRow.appendChild(clonedTheme)
-                for (let j = 0; j < 5; j++) {
-                    let buttonTemplate = document.querySelector('#button-template').content.querySelector('button')
-                    let clonedButton = buttonTemplate.cloneNode(true)
-                    clonedButton.textContent = (j + 1) * 100
-                    clonedButton.dataset.row = i
-                    clonedButton.addEventListener('click', (event) => {
-                        clearInterval(timer)
-                        stopQuestionTimer()
-                        for (playerCard of document.querySelector('.players-game-frame').querySelectorAll('.player-question-card')) {
-                            playerCard.querySelectorAll('.answer-check-button').forEach((btn) => {
-                                btn.disabled = false
-                            })
-                        }
-                        backToFieldButton.style.visibility = 'hidden'
-                        currentRow = event.target.dataset.row
-                        currentCost = (j + 1) * 100
-                        gameBoard[questions.length - i - 1][j] = 1
-
-
-                        gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))
-                        gamesData[gameName]['gameBoard'] = gameBoard
-                        fs.writeFileSync('games.json', JSON.stringify(gamesData))
-
-                        let questionText = questions[event.target.dataset.row][event.target.textContent]
-                        if (!filesExtensions.includes(questionText.split(".")[questionText.split(".").length - 1])) {
-                            document.querySelector(".question-text").textContent = questionText
-                        } else {
-                            let img = document.createElement('img')
-                            img.classList.add("question-image")
-                            img.src = xlsxPath + '/../files/' + questionText
-                            document.querySelector(".question-text").textContent = ""
-                            document.querySelector(".question-text").appendChild(img)
-                        }
-                        startQuestionTimer(event, false, false)
-                    })
-                    clonedRow.appendChild(clonedButton)
-                }
-                field.insertBefore(clonedRow, field.children[0]);
-            }
-            let playersFrame = document.querySelector('.players-frame')
-            for (let [key, value] of Object.entries(players)) {
-                let playerCardTemplate = document.querySelector('#player-card-template').content
-                let playerCard = playerCardTemplate.querySelector('div')
-                let clonedPlayerCard = playerCard.cloneNode(true)
-                clonedPlayerCard.querySelector('.player-name').textContent = key
-                clonedPlayerCard.querySelector('.player-score').textContent = value
-
-                playersFrame.appendChild(clonedPlayerCard)
-            }
-            let playersGameFrame = document.querySelector('.players-game-frame')
-            for (let key of Object.keys(players)) {
-                let playerQuestionCardTemplate = document.querySelector('#player-question-card-template').content
-                let playerQuestionCard = playerQuestionCardTemplate.querySelector('div')
-                let clonedPlayerQuestionCard = playerQuestionCard.cloneNode(true)
-                clonedPlayerQuestionCard.querySelector('.player-name').textContent = key
-                clonedPlayerQuestionCard.querySelector('.ok-answer').addEventListener('click', (e) => {
-                    players[key] += currentCost
-                    let answerText = answers[currentRow][currentCost]
-                    if (!filesExtensions.includes(answerText.split(".")[answerText.split(".").length - 1])) {
-                        document.querySelector(".question-text").textContent = answerText
-                    } else {
-                        console.log(xlsxFile.path)
-                        let img = document.createElement('img')
-                        img.classList.add("question-image")
-                        img.src = xlsxPath + '/../files/' + answerText
-                        document.querySelector(".question-text").textContent = ""
-                        document.querySelector(".question-text").appendChild(img)
-                    }
-
-                    gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))
-                    gamesData[gameName]['players'] = players
-                    fs.writeFileSync('games.json', JSON.stringify(gamesData))
-
-                    for (playerCard of document.querySelector('.players-game-frame').querySelectorAll('.player-question-card')) {
-                        playerCard.querySelectorAll('.answer-check-button').forEach((btn) => {
-                            btn.disabled = true
-                        })
-                    }
-                    for (let playerCard of document.querySelector(".players-frame").querySelectorAll(".player-card")) {
-                        playerCard.querySelector(".player-score").innerHTML = players[playerCard.querySelector(".player-name").innerHTML]
-                    }
-                    stopQuestionTimer()
-                    backToFieldButton.style.visibility = 'hidden'
-                })
-                clonedPlayerQuestionCard.querySelector('.wrong-answer').addEventListener('click', (e) => {
-                    players[key] -= currentCost
-                    clonedPlayerQuestionCard.querySelector('.ok-answer').disabled = true
-                    clonedPlayerQuestionCard.querySelector('.wrong-answer').disabled = true
-                    let btns = []
-                    for (playerCard of document.querySelector('.players-game-frame').querySelectorAll('.player-question-card')) {
-                        playerCard.querySelectorAll('.answer-check-button').forEach((btn) => {
-                            btns.push(btn.disabled)
-                        })
-                    }
-                    if (btns.every((e) => { return e })) {
-                        stopQuestionTimer()
-                        backToFieldButton.style.visibility = 'visible'
-                        for (playerCard of document.querySelector('.players-game-frame').querySelectorAll('.player-question-card')) {
-                            playerCard.querySelectorAll('.answer-check-button').forEach((btn) => {
-                                btn.disabled = true
-                            })
-                        }
-                        let answerText = answers[currentRow][currentCost]
-                        if (!filesExtensions.includes(answerText.split(".")[answerText.split(".").length - 1])) {
-                            document.querySelector(".question-text").textContent = answerText
-                        } else {
-                            let img = document.createElement('img')
-                            img.classList.add("question-image")
-                            img.src = xlsxPath + '/../files/' + answerText
-                            document.querySelector(".question-text").textContent = ""
-                            document.querySelector(".question-text").appendChild(img)
-                        }
-                        gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))
-                        gamesData[gameName]['players'] = players
-                        fs.writeFileSync('games.json', JSON.stringify(gamesData))
-                    }
-                    for (let playerCard of document.querySelector(".players-frame").querySelectorAll(".player-card")) {
-                        playerCard.querySelector(".player-score").innerHTML = players[playerCard.querySelector(".player-name").innerHTML]
-                    }
-                })
-
-                playersGameFrame.appendChild(clonedPlayerQuestionCard)
-            }
-            closeButton.style = 'visibility: hidden'
-            document.querySelector('#input-game-name-label').value = ''
-            document.querySelector('.users-list').innerHTML = ''
-            document.querySelector('.input-game-name-label').value = ''
-            document.querySelector('.input-user-label').value = ''
-            document.querySelector('.input-file-text').innerHTML = ''
+            createGameWindow()
         }
     })
 
@@ -816,27 +728,15 @@ window.addEventListener('DOMContentLoaded', () => {
         })
         tabs[0].classList.add("show")
 
-        gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))
-        delete gamesData[gameName]
-        fs.writeFileSync('games.json', JSON.stringify(gamesData))
+
     })
 
     document.querySelector('.input-file input[type=file]').addEventListener('change', function (e) {
-        xlsxFile = this.files[0]
+        let xlsxFile = this.files[0]
+
         document.querySelector('.input-file-text').textContent = xlsxFile.name
-
-        const reader = XLSX.readFile(xlsxFile.path)
-
-
-        const questions_temp = XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[0]]).reverse()
-        questions_temp.forEach((res) => {
-            questions.push(res)
-        })
-
-        const answers_temp = XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[1]]).reverse()
-        answers_temp.forEach((res) => {
-            answers.push(res)
-        })
+        xlsxPath = xlsxFile.path
+        setQuestions(xlsxPath)
     });
 
     inputRangeField.addEventListener("input", (e) => {
