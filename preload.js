@@ -37,6 +37,7 @@ window.addEventListener('DOMContentLoaded', () => {
         start = Date.now()
         let tick = width / (timerSeconds * 1000)
         timer = setInterval(() => {
+            canEsc = true
             timePassed = Date.now() - start + pauseTime
             if (timePassed <= timerSeconds * 1000) {
                 questionTimer.style = `width: ${tick * timePassed}px`
@@ -92,6 +93,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 timePassed = Date.now() - start + pauseTime
                 if (timePassed <= 300) {
                     showCircle(timePassed)
+                    canEsc = false
                 } else if (timePassed <= 600) {
                     tabs.forEach((tab) => {
                         tab.classList.remove("show")
@@ -107,11 +109,9 @@ window.addEventListener('DOMContentLoaded', () => {
                         event.target.disabled = true
                     }
                     eventTimer = new Event("timer-tick")
-
                     document.dispatchEvent(eventTimer)
                     return
                 }
-
             }, 1)
         }
 
@@ -301,7 +301,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     currentRow = event.target.dataset.row
                     currentCost = (j + 1) * 100
                     gameBoard[questions.length - i - 1][j] = 1
-                    
+
                     params = {
                         'gameName': gameName,
                         'xlsxPath': null,
@@ -354,6 +354,18 @@ window.addEventListener('DOMContentLoaded', () => {
         fs.writeFileSync('games.json', JSON.stringify(gamesData))
     }
 
+    const fillPedestal = async () => {
+        let scores = Object.values(players)
+        scores.sort()
+        scores = scores.reverse()
+        document.querySelector('.first-place-player-name').innerHTML = Object.keys(players).find(key => players[key] === scores[0])
+        document.querySelector('.first-place-player-score').innerHTML = scores[0]
+        document.querySelector('.second-place-player-name').innerHTML = Object.keys(players).find(key => players[key] === scores[1])
+        document.querySelector('.second-place-player-score').innerHTML = scores[1]
+        document.querySelector('.third-place-player-name').innerHTML = Object.keys(players).find(key => players[key] === scores[2])
+        document.querySelector('.third-place-player-score').innerHTML = scores[2]
+    }
+
     let questions = []
     let answers = []
     let xlsxPath = ''
@@ -362,6 +374,7 @@ window.addEventListener('DOMContentLoaded', () => {
     let currentCost = 0
     let eventTimer = null
     let timer = null
+    let canEsc = true
     let circleTimer = null
     let timerFlag = false
     let timePassed = 0
@@ -449,6 +462,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.addEventListener("keydown", (e) => {
         let section_index = 0
         let new_section = 0
+        let flag = true
         let sections = document.querySelectorAll("section")
         for (let i = 0; i < sections.length; i++) {
             if ("show" == sections[i].className.toLowerCase()) {
@@ -457,43 +471,65 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         switch (e.key) {
             case "Escape":
-                switch (section_index) {
-                    case 0:
-                        new_section = 0
-                        break
-                    case 1:
-                        new_section = 0
-                        break
-                    case 2:
-                        new_section = 1
-                        closeButton.style = ''
-                        document.querySelector('.game').innerHTML = '<div class="players-frame"></div>'
-                        questions = []
-                        answers = []
-                        xlsxPath = ''
-                        players = {}
-                        gameName = ''
-                        fillSaveGame()
-                        document.querySelector('.players-game-frame').innerHTML = ''
-                        break
-                    case 3:
-                        new_section = 2
-                        stopQuestionTimer()
-                        break
-                    case 4:
-                        new_section = 0
-                        break
-                    case 5:
-                        new_section = 0
-                        break
-                    default:
-                        new_section = 0
+                if (canEsc) {
+                    switch (section_index) {
+                        case 0:
+                            new_section = 0
+                            break
+                        case 1:
+                            new_section = 0
+                            break
+                        case 2:
+                            new_section = 1
+                            closeButton.style = ''
+                            document.querySelector('.game').innerHTML = '<div class="players-frame"></div>'
+                            questions = []
+                            answers = []
+                            xlsxPath = ''
+                            players = {}
+                            gameName = ''
+                            fillSaveGame()
+                            document.querySelector('.players-game-frame').innerHTML = ''
+                            gameBoard =
+                                [[0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0],]
+                            break
+                        case 3:
+                            stopQuestionTimer()
+                            if (gameBoard.every(row => row.every(elem => elem == 1) == true)) {
+                                tabs.forEach((tab) => {
+                                    tab.classList.remove("show")
+                                })
+                                tabs[5].classList.add("show")
+                                flag = false
+                                fillPedestal()
+                            } else {
+                                new_section = 2
+                            }
+                            break
+                        case 4:
+                            new_section = 0
+                            break
+                        case 5:
+                            new_section = 0
+                            break
+                        default:
+                            new_section = 0
+                    }
+
+                    if (flag) {
+                        tabs.forEach((tab) => {
+                            tab.classList.remove("show")
+                        })
+
+                        tabs[new_section].classList.add("show")
+
+                    }
                 }
-                tabs.forEach((tab) => {
-                    2
-                    tab.classList.remove("show")
-                })
-                tabs[new_section].classList.add("show")
             case " ":
                 switch (section_index) {
                     case 3:
@@ -719,6 +755,13 @@ window.addEventListener('DOMContentLoaded', () => {
         tabs[2].classList.add("show")
         clearInterval(timer)
         stopQuestionTimer()
+        if (gameBoard.every(row => row.every(elem => elem == 1) == true)) {
+            tabs.forEach((tab) => {
+                tab.classList.remove("show")
+            })
+            tabs[5].classList.add("show")
+            fillPedestal()
+        }
     })
 
     endGameButton.addEventListener('click', (e) => {
@@ -726,14 +769,30 @@ window.addEventListener('DOMContentLoaded', () => {
             tab.classList.remove("show")
         })
         tabs[0].classList.add("show")
-
-
+        deleteGameData(gameName)
+        closeButton.style = ''
+        document.querySelector('.game').innerHTML = '<div class="players-frame"></div>'
+        questions = []
+        answers = []
+        xlsxPath = ''
+        players = {}
+        gameName = ''
+        fillSaveGame()
+        document.querySelector('.players-game-frame').innerHTML = ''
+        gameBoard =
+            [[0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],]
     })
 
     document.querySelector('.input-file input[type=file]').addEventListener('change', function (e) {
         let xlsxFile = this.files[0]
 
-        document.querySelector('.input-file-text').textContent = xlsxFile.name
+        document.querySelector('.input-file-text').innerHTML = xlsxFile.name
+        this.value = null
         xlsxPath = xlsxFile.path
         setQuestions(xlsxPath)
     });
