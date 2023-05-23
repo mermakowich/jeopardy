@@ -32,6 +32,35 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    const fillQuestionText = async (i, j, type) => {
+        let questionText
+        if (type === 'question') {
+            questionText = questions[i][j]
+        } else {
+            questionText = answers[i][j]
+        }
+        let extension = questionText.split(".")[questionText.split(".").length - 1].toLowerCase()
+        if (filesPhotoExtensions.includes(extension)) {
+            let img = document.createElement('img')
+            img.classList.add("question-image")
+            img.src = xlsxPath + '/../files/' + questionText
+            document.querySelector(".question-text").textContent = ""
+            document.querySelector(".question-text").appendChild(img)
+        } else if (filesVideoExtensions.includes(extension)) {
+            let video = document.createElement("video")
+            video.setAttribute("autoplay", "")
+            video.classList.add("question-image")
+            let source = document.createElement("source")
+            source.setAttribute("src", xlsxPath + '/../files/' + questionText)
+            source.setAttribute("type", `video/${extension}`);
+            video.appendChild(source)
+            document.querySelector(".question-text").textContent = ''
+            document.querySelector(".question-text").appendChild(video)
+        } else {
+            document.querySelector(".question-text").textContent = questionText
+        }
+    }
+
     document.addEventListener("timer-tick", (e) => {
         let width = questionTimer.parentNode.offsetWidth
         start = Date.now()
@@ -50,16 +79,7 @@ window.addEventListener('DOMContentLoaded', () => {
                         btn.disabled = true
                     })
                 }
-                let answerText = answers[currentRow][currentCost]
-                if (!filesExtensions.includes(answerText.split(".")[answerText.split(".").length - 1])) {
-                    document.querySelector(".question-text").textContent = answerText
-                } else {
-                    let img = document.createElement('img')
-                    img.classList.add("question-image")
-                    img.src = xlsxPath + '/../files/' + answerText
-                    document.querySelector(".question-text").textContent = ""
-                    document.querySelector(".question-text").appendChild(img)
-                }
+                fillQuestionText(currentRow, currentCost, 'answer')
                 params = {
                     'gameName': gameName,
                     'xlsxPath': null,
@@ -160,16 +180,7 @@ window.addEventListener('DOMContentLoaded', () => {
             clonedPlayerQuestionCard.querySelector('.player-name').textContent = key
             clonedPlayerQuestionCard.querySelector('.ok-answer').addEventListener('click', (e) => {
                 players[key] += currentCost
-                let answerText = answers[currentRow][currentCost]
-                if (!filesExtensions.includes(answerText.split(".")[answerText.split(".").length - 1])) {
-                    document.querySelector(".question-text").textContent = answerText
-                } else {
-                    let img = document.createElement('img')
-                    img.classList.add("question-image")
-                    img.src = xlsxPath + '/../files/' + answerText
-                    document.querySelector(".question-text").textContent = ""
-                    document.querySelector(".question-text").appendChild(img)
-                }
+                fillQuestionText(currentRow, currentCost, 'answer')
 
                 params = {
                     'gameName': gameName,
@@ -210,16 +221,7 @@ window.addEventListener('DOMContentLoaded', () => {
                             btn.disabled = true
                         })
                     }
-                    let answerText = answers[currentRow][currentCost]
-                    if (!filesExtensions.includes(answerText.split(".")[answerText.split(".").length - 1])) {
-                        document.querySelector(".question-text").textContent = answerText
-                    } else {
-                        let img = document.createElement('img')
-                        img.classList.add("question-image")
-                        img.src = xlsxPath + '/../files/' + answerText
-                        document.querySelector(".question-text").textContent = ""
-                        document.querySelector(".question-text").appendChild(img)
-                    }
+                    fillQuestionText(currentRow, currentCost, 'answer')
                     params = {
                         'gameName': gameName,
                         'xlsxPath': null,
@@ -271,7 +273,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const fillQuestionButtons = async () => {
         let field = document.querySelector('.game')
-
+        getGameData(gameName)
         for (let i = 0; i < questions.length; i++) {
             let rowTemplate = document.querySelector('#row-template').content
             let themeTemplate = document.querySelector('#theme-template').content
@@ -279,12 +281,12 @@ window.addEventListener('DOMContentLoaded', () => {
             let row = rowTemplate.querySelector('div')
             let clonedTheme = theme.cloneNode(true)
             let clonedRow = row.cloneNode(true)
-            clonedTheme.children[0].textContent = questions[i]["THEME"]
+            clonedTheme.children[0].textContent = Object.values(questions[i])[Object.values(questions[i]).length - 1]
             clonedRow.appendChild(clonedTheme)
-            for (let j = 0; j < 5; j++) {
+            for (let j = 0; j < Object.values(questions[i]).length - 1; j++) {
                 let buttonTemplate = document.querySelector('#button-template').content.querySelector('button')
                 let clonedButton = buttonTemplate.cloneNode(true)
-                clonedButton.textContent = (j + 1) * 100
+                clonedButton.textContent = Object.keys(questions[i])[j]
                 clonedButton.dataset.row = i
                 if (gameBoard[questions.length - i - 1][j] == 1) {
                     clonedButton.disabled = true
@@ -299,7 +301,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     }
                     backToFieldButton.style.visibility = 'hidden'
                     currentRow = event.target.dataset.row
-                    currentCost = (j + 1) * 100
+                    currentCost = Number(Object.keys(questions[i])[j])
                     gameBoard[questions.length - i - 1][j] = 1
 
                     params = {
@@ -312,16 +314,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     }
                     setGameData(params)
 
-                    let questionText = questions[event.target.dataset.row][event.target.textContent]
-                    if (!filesExtensions.includes(questionText.split(".")[questionText.split(".").length - 1])) {
-                        document.querySelector(".question-text").textContent = questionText
-                    } else {
-                        let img = document.createElement('img')
-                        img.classList.add("question-image")
-                        img.src = xlsxPath + '/../files/' + questionText
-                        document.querySelector(".question-text").textContent = ""
-                        document.querySelector(".question-text").appendChild(img)
-                    }
+                    fillQuestionText(event.target.dataset.row, event.target.textContent, 'question')
                     startQuestionTimer(event, false, false)
                 })
                 clonedRow.appendChild(clonedButton)
@@ -331,8 +324,8 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     const createGameWindow = async () => {
-        fillQuestionButtons()
         setPlayersFrame()
+        fillQuestionButtons()
         setPlayersGameFrame()
         closeButton.style = 'visibility: hidden'
         document.querySelector('#input-game-name-label').value = ''
@@ -356,14 +349,22 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const fillPedestal = async () => {
         let scores = Object.values(players)
+        let playersCopy = players
         scores.sort()
         scores = scores.reverse()
-        document.querySelector('.first-place-player-name').innerHTML = Object.keys(players).find(key => players[key] === scores[0])
+        document.querySelector('.first-place-player-name').innerHTML = Object.keys(playersCopy).find(key => playersCopy[key] === scores[0])
         document.querySelector('.first-place-player-score').innerHTML = scores[0]
-        document.querySelector('.second-place-player-name').innerHTML = Object.keys(players).find(key => players[key] === scores[1])
+        delete playersCopy[Object.keys(playersCopy).find(key => playersCopy[key] === scores[0])]
+        document.querySelector('.second-place-player-name').innerHTML = Object.keys(playersCopy).find(key => playersCopy[key] === scores[1])
         document.querySelector('.second-place-player-score').innerHTML = scores[1]
-        document.querySelector('.third-place-player-name').innerHTML = Object.keys(players).find(key => players[key] === scores[2])
-        document.querySelector('.third-place-player-score').innerHTML = scores[2]
+        delete playersCopy[Object.keys(playersCopy).find(key => playersCopy[key] === scores[1])]
+        if (scores.length >= 3) {
+            document.querySelector('.third-place-player-name').innerHTML = Object.keys(playersCopy).find(key => playersCopy[key] === scores[2])
+            document.querySelector('.third-place-player-score').innerHTML = scores[2]
+            delete playersCopy[Object.keys(playersCopy).find(key => playersCopy[key] === scores[2])]
+        } else {
+            document.querySelector('.third-place-div').style = "visibility: hidden"
+        }
     }
 
     let questions = []
@@ -382,14 +383,9 @@ window.addEventListener('DOMContentLoaded', () => {
     let gameName = ''
     let gameDate = null
     let gamesData = null
-    let filesExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'svg', 'raw', 'psd',]
-    let gameBoard =
-        [[0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0],]
+    let filesPhotoExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'svg', 'raw', 'psd']
+    let filesVideoExtensions = ['mp4', 'mpeg', 'webm', 'ogg', 'mov', 'avi', 'mkv', 'wmv', 'flv', '3gp']
+    let gameBoard
 
     let tabs = document.querySelectorAll("section")
     let questionDiv = document.querySelector(".question")
@@ -407,8 +403,8 @@ window.addEventListener('DOMContentLoaded', () => {
     let sliders = document.querySelectorAll(".faq-item")
     let newGameFormSidebar = document.querySelector(".new-game-sidebar")
     let loadGameFormSidebar = document.querySelector(".load-game-sidebar")
-    let newGameElements = document.querySelectorAll(".new-game-sidebar input, .new-game-sidebar button")
-    let loadGameElements = document.querySelectorAll(".load-game-sidebar input, .load-game-sidebar button")
+    let newGameElements = document.querySelectorAll(".new-game-sidebar input, .new-game-sidebar button, .input-file")
+    let loadGameElements = document.querySelectorAll(".load-game-sidebar input, .load-game-sidebar button, .save-game-list")
     let faqBackButton = document.querySelector("#faq-back-button")
     let faqStartGameButton = document.querySelector("#faq-start-game-button")
     let closeButton = document.querySelector("#close-button")
@@ -490,13 +486,6 @@ window.addEventListener('DOMContentLoaded', () => {
                             gameName = ''
                             fillSaveGame()
                             document.querySelector('.players-game-frame').innerHTML = ''
-                            gameBoard =
-                                [[0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0],
-                                [0, 0, 0, 0, 0],]
                             break
                         case 3:
                             stopQuestionTimer()
@@ -732,12 +721,11 @@ window.addEventListener('DOMContentLoaded', () => {
                 tab.classList.remove("show")
             })
             tabs[2].classList.add("show")
-
             params = {
                 'gameName': gameName,
                 'xlsxPath': path.resolve(xlsxPath),
                 'players': players,
-                'gameBoard': gameBoard,
+                'gameBoard': Array(questions.length).fill(Array(Object.values(questions[1]).length).fill(0)),
                 'gameDate': (new Date()).toISOString().slice(0, 10).split('-').reverse().join('.'),
                 'timerSeconds': timerSeconds
             }
@@ -779,13 +767,7 @@ window.addEventListener('DOMContentLoaded', () => {
         gameName = ''
         fillSaveGame()
         document.querySelector('.players-game-frame').innerHTML = ''
-        gameBoard =
-            [[0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0],]
+        document.querySelector('.third-place-div').style = "visibility: visible"
     })
 
     document.querySelector('.input-file input[type=file]').addEventListener('change', function (e) {
@@ -803,7 +785,10 @@ window.addEventListener('DOMContentLoaded', () => {
     })
 
     newGameFormSidebar.addEventListener("click", (e) => {
-        loadGameElements.forEach((el) => el.disabled = true)
+        newGameElements.forEach((el) => el.style = "pointer-events: auto;")
+        loadGameElements.forEach((el) => {
+            el.style = "pointer-events: none;"
+        })
         if (!e.target.classList.contains("active-sidebar") && e.target.classList.contains("menu-sidebar")) {
             loadGameFormSidebar.classList.remove("active-sidebar")
             e.target.classList.add("active-sidebar")
@@ -811,10 +796,16 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     })
 
-    loadGameElements.forEach((el) => el.disabled = true)
+    loadGameElements.forEach((el) => el.style = "pointer-events: none;")
 
     loadGameFormSidebar.addEventListener("click", (e) => {
-        newGameElements.forEach((el) => el.disabled = true)
+        loadGameElements.forEach((el) => el.style = "pointer-events: auto;")
+        newGameElements.forEach((el) => {
+            el.style = "pointer-events: none;"
+            el.addEventListener('click', (event) => {
+                newGameFormSidebar.click()
+            })
+        })
         if (!e.target.classList.contains("active-sidebar") && e.target.classList.contains("menu-sidebar")) {
             newGameFormSidebar.classList.remove("active-sidebar")
             e.target.classList.add("active-sidebar")
