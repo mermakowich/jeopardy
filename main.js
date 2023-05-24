@@ -8,7 +8,7 @@ function createWindow() {
         show: true,
         backgroundColor: '#2e2c29',
         center: true,
-        resizable: false,
+        resizable: true,
         fullscreen: true,
         titleBarStyle: 'hidden', // fullscreen - titlebar
         webPreferences: {
