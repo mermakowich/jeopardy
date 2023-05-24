@@ -5,12 +5,12 @@ function createWindow() {
     const win = new BrowserWindow({
         width: 900,
         height: 700,
-        // show: false,
-        // backgroundColor: '#2e2c29',
+        show: true,
+        backgroundColor: '#2e2c29',
         center: true,
-        // resizable: false,
-        // fullscreen: true,
-        // titleBarStyle: 'hidden', // fullscreen - titlebar
+        resizable: false,
+        fullscreen: true,
+        titleBarStyle: 'hidden', // fullscreen - titlebar
         webPreferences: {
             devTools: true,
             preload: path.join(__dirname, 'preload.js'),
@@ -18,8 +18,8 @@ function createWindow() {
         }
     })
     
-    // win.maximize()
-    // win.show()
+    win.maximize()
+    win.show()
     win.loadFile('index.html')
 }
 
