@@ -5,6 +5,7 @@ const domain = require("domain")
 const fs = require('fs')
 const path = require('path')
 
+
 window.addEventListener('DOMContentLoaded', () => {
 
     const fillSaveGame = async () => {
@@ -288,6 +289,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 let clonedButton = buttonTemplate.cloneNode(true)
                 clonedButton.textContent = Object.keys(questions[i])[j]
                 clonedButton.dataset.row = i
+                console.log(gameBoard, questions)
                 if (gameBoard[questions.length - i - 1][j] == 1) {
                     clonedButton.disabled = true
                 }
@@ -348,9 +350,10 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     const fillPedestal = async () => {
-        let scores = Object.values(players)
+        let stringScores = Object.values(players)
         let playersCopy = players
-        scores.sort()
+        let scores = stringScores.map(n => { return parseInt(n, 10) })
+        scores.sort((a, b) => a - b)
         scores = scores.reverse()
         document.querySelector('.first-place-player-name').innerHTML = Object.keys(playersCopy).find(key => playersCopy[key] === scores[0])
         document.querySelector('.first-place-player-score').innerHTML = scores[0]
@@ -381,7 +384,6 @@ window.addEventListener('DOMContentLoaded', () => {
     let timePassed = 0
     let pauseTime = null
     let gameName = ''
-    let gameDate = null
     let gamesData = null
     let filesPhotoExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'svg', 'raw', 'psd']
     let filesVideoExtensions = ['mp4', 'mpeg', 'webm', 'ogg', 'mov', 'avi', 'mkv', 'wmv', 'flv', '3gp']
@@ -420,40 +422,6 @@ window.addEventListener('DOMContentLoaded', () => {
             fs.writeFileSync("games.json", JSON.stringify({}))
         }
     });
-
-    // временные обработчики кнопок 1-5 для переключения между экранами и 6 для тестирования
-    document.addEventListener("keypress", (e) => {
-        if (e.key == "1") {
-            tabs.forEach((tab) => {
-                tab.classList.remove("show")
-            })
-            tabs[0].classList.add("show")
-        }
-        if (e.key == "2") {
-            tabs.forEach((tab) => {
-                tab.classList.remove("show")
-            })
-            tabs[1].classList.add("show")
-        }
-        if (e.key == "3") {
-            tabs.forEach((tab) => {
-                tab.classList.remove("show")
-            })
-            tabs[2].classList.add("show")
-        }
-        if (e.key == "4") {
-            tabs.forEach((tab) => {
-                tab.classList.remove("show")
-            })
-            tabs[3].classList.add("show")
-        }
-        if (e.key == "5") {
-            tabs.forEach((tab) => {
-                tab.classList.remove("show")
-            })
-            tabs[4].classList.add("show")
-        }
-    })
 
     document.addEventListener("keydown", (e) => {
         let section_index = 0
@@ -534,6 +502,28 @@ window.addEventListener('DOMContentLoaded', () => {
                     default:
                         break
                 }
+            case "Enter": {
+                if (section_index == 3) {
+                    stopQuestionTimer()
+                    clearInterval(timer)
+                    backToFieldButton.style.visibility = 'visible'
+                    for (playerCard of document.querySelector('.players-game-frame').querySelectorAll('.player-question-card')) {
+                        playerCard.querySelectorAll('.answer-check-button').forEach((btn) => {
+                            btn.disabled = true
+                        })
+                    }
+                    fillQuestionText(currentRow, currentCost, 'answer')
+                    params = {
+                        'gameName': gameName,
+                        'xlsxPath': null,
+                        'players': players,
+                        'gameBoard': gameBoard,
+                        'gameDate': null,
+                        'timerSeconds': null
+                    }
+                    setGameData(params)
+                }
+            }
         }
     })
 
@@ -584,16 +574,20 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         })
 
-        if (checkedGame) {
-            tabs.forEach((tab) => {
-                tab.classList.remove("show")
-            })
-            tabs[2].classList.add("show")
+        if (!checkedGame) {
+            alert('Вы не выбрали игру')
+        } else {
             getGameData(gameName)
             setQuestions(xlsxPath)
-            createGameWindow()
-        } else {
-            alert('Вы не выбрали игру')
+            if (questions.length === 0) {
+                alert('Не удалось найти файл, который был использован для формирования игрового поля!')
+            } else {
+                createGameWindow()
+                tabs.forEach((tab) => {
+                    tab.classList.remove("show")
+                })
+                tabs[2].classList.add("show")
+            }
         }
     })
 
@@ -725,7 +719,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 'gameName': gameName,
                 'xlsxPath': path.resolve(xlsxPath),
                 'players': players,
-                'gameBoard': Array(questions.length).fill(Array(Object.values(questions[1]).length).fill(0)),
+                'gameBoard': Array(questions.length).fill(Array(Object.values(questions[0]).length - 1).fill(0)),
                 'gameDate': (new Date()).toISOString().slice(0, 10).split('-').reverse().join('.'),
                 'timerSeconds': timerSeconds
             }
