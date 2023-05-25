@@ -289,7 +289,6 @@ window.addEventListener('DOMContentLoaded', () => {
                 let clonedButton = buttonTemplate.cloneNode(true)
                 clonedButton.textContent = Object.keys(questions[i])[j]
                 clonedButton.dataset.row = i
-                console.log(gameBoard, questions)
                 if (gameBoard[questions.length - i - 1][j] == 1) {
                     clonedButton.disabled = true
                 }
@@ -423,6 +422,49 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    document.addEventListener("mousedown", (e) => {
+        let section_index = 0
+        let sections = document.querySelectorAll("section")
+        for (let i = 0; i < sections.length; i++) {
+            if ("show" == sections[i].className.toLowerCase()) {
+                section_index = i
+            }
+        }
+        if (e.button == 2) {
+            if (section_index == 3) {
+                if (timerFlag) {
+                    clearInterval(timer)
+                    startQuestionTimer(null, true, false)
+                } else {
+                    clearInterval(timer)
+                    startQuestionTimer(null, true, true)
+                }
+                timerFlag = !timerFlag
+            }
+        } else if (e.button == 1) {
+            if (section_index == 3) {
+                stopQuestionTimer()
+                clearInterval(timer)
+                backToFieldButton.style.visibility = 'visible'
+                for (playerCard of document.querySelector('.players-game-frame').querySelectorAll('.player-question-card')) {
+                    playerCard.querySelectorAll('.answer-check-button').forEach((btn) => {
+                        btn.disabled = true
+                    })
+                }
+                fillQuestionText(currentRow, currentCost, 'answer')
+                params = {
+                    'gameName': gameName,
+                    'xlsxPath': null,
+                    'players': players,
+                    'gameBoard': gameBoard,
+                    'gameDate': null,
+                    'timerSeconds': null
+                }
+                setGameData(params)
+            }
+        }
+    })
+
     document.addEventListener("keydown", (e) => {
         let section_index = 0
         let new_section = 0
@@ -487,22 +529,20 @@ window.addEventListener('DOMContentLoaded', () => {
 
                     }
                 }
+                break
             case " ":
-                switch (section_index) {
-                    case 3:
-                        if (timerFlag) {
-                            clearInterval(timer)
-                            startQuestionTimer(null, true, false)
-                        } else {
-                            clearInterval(timer)
-                            startQuestionTimer(null, true, true)
-                        }
-                        timerFlag = !timerFlag
-                        break
-                    default:
-                        break
+                if (section_index == 3) {
+                    if (timerFlag) {
+                        clearInterval(timer)
+                        startQuestionTimer(null, true, false)
+                    } else {
+                        clearInterval(timer)
+                        startQuestionTimer(null, true, true)
+                    }
+                    timerFlag = !timerFlag
                 }
-            case "Enter": {
+                break
+            case "Enter":
                 if (section_index == 3) {
                     stopQuestionTimer()
                     clearInterval(timer)
@@ -523,7 +563,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     }
                     setGameData(params)
                 }
-            }
+                break
         }
     })
 
