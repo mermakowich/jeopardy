@@ -11,7 +11,7 @@
     "build": "electron-builder"
   },
   "keywords": [],
-  "author": "",
+  "author": "ITSDENISSKA",
   "license": "ISC",
   "devDependencies": {
     "electron": "^23.1.0",
@@ -21,5 +21,31 @@
   "dependencies": {
     "sqlite3": "^5.1.6",
     "xlsx": "^0.18.5"
+  },
+  "build": {
+    "dmg": {
+      "contents": [
+        {
+          "x": 110,
+          "y": 150
+        },
+        {
+          "x": 240,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    },
+    "win": {
+      "target": "squirrel",
+      "icon": "build/icon.ico"
+    }
   }
 }
