@@ -339,6 +339,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const setQuestions = async (path) => {
         const reader = XLSX.readFile(path)
+        questions = []
+        answers = []
         XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[0]]).reverse().forEach((res) => { questions.push(res) })
         XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[1]]).reverse().forEach((res) => { answers.push(res) })
     }
