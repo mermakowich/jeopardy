@@ -309,6 +309,7 @@ section {
 .question-text {
     font-size: 6rem;
     word-wrap: break-word;
+    white-space: pre-wrap;
 }
 
 .time-status {

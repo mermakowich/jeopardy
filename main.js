@@ -10,7 +10,7 @@ function createWindow() {
         center: true,
         resizable: true,
         fullscreen: true,
-        titleBarStyle: 'hidden', // fullscreen - titlebar
+        // titleBarStyle: 'hidden', // fullscreen - titlebar
         webPreferences: {
             devTools: true,
             preload: path.join(__dirname, 'preload.js'),

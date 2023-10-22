@@ -2,21 +2,19 @@
   "name": "JEOPARDY-GAMEMAKER",
   "version": "1.0.0",
   "main": "main.js",
-  "author": {
-    "name": "ITSDENISSKA",
-    "email": "fotiev.d1991@gmail.com"
-  },
+  "author": "ITSDENISSKA",
   "scripts": {
+    "dir": "electron-builder --dir",
+    "dist": "electron-builder",
     "start": "electron .",
     "build": "electron-builder"
   },
   "keywords": [],
-  "author": "ITSDENISSKA",
   "license": "ISC",
   "devDependencies": {
     "electron": "^23.1.0",
-    "electron-packager": "^17.1.1",
-    "electron-builder": "^23.6.0"
+    "electron-builder": "^23.6.0",
+    "electron-packager": "^17.1.2"
   },
   "dependencies": {
     "sqlite3": "^5.1.6",
