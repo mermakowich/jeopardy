@@ -36,9 +36,9 @@ window.addEventListener('DOMContentLoaded', () => {
     const fillQuestionText = async (i, j, type) => {
         let questionText
         if (type === 'question') {
-            questionText = questions[i][j]
+            questionText = questions[i][j].toString()
         } else {
-            questionText = answers[i][j]
+            questionText = answers[i][j].toString()
         }
         let extension = questionText.split(".")[questionText.split(".").length - 1].toLowerCase()
         if (filesPhotoExtensions.includes(extension)) {
@@ -340,9 +340,8 @@ window.addEventListener('DOMContentLoaded', () => {
         const reader = XLSX.readFile(path)
         questions = []
         answers = []
-        XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[0]]).reverse().forEach((res) => { questions.push(res) })
+        XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[0]]).reverse().forEach((res) => { console.log(res); questions.push(res) })
         XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[1]]).reverse().forEach((res) => { answers.push(res) })
-        console.log(questions)
     }
 
     const deleteGameData = async (gameName) => {
@@ -767,7 +766,6 @@ window.addEventListener('DOMContentLoaded', () => {
                 'timerSeconds': timerSeconds
             }
             setGameData(params)
-
             createGameWindow()
         }
     })
