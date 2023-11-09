@@ -1,3 +1,4 @@
 # jeopardy
-<a href="https://docs.google.com/presentation/d/1KVK8CN4cS3bBXAOCJttR5nd5G8VzOoQTgbUDI26l8c8/edit?usp=sharing" style="color: green; font-size: 16px">Презентация проекта и информация о нём</a>
-<p style="color: blue; font-size:12px"><a href="https://disk.yandex.ru/d/W1MYvYueLhZhjw">Скачать</a></p>
+<a href="https://docs.google.com/presentation/d/1njC03U8graOycN4XU_1Rs6CaQ5_oWVEvGlzqaTomdsU/edit?usp=sharing">Презентация проекта</a>
+<a href="https://docs.google.com/document/d/14cPy6Reyb12w5P-iD6ubun5lQX883GvA-wYrGMyVPa0/edit?usp=sharing">Паспорт проекта</a>
+<a href="https://disk.yandex.ru/d/W1MYvYueLhZhjw">Скачать установщик</a>
