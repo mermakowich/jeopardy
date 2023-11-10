@@ -10,6 +10,7 @@ function createWindow() {
         center: true,
         resizable: true,
         fullscreen: true,
+        icon: "icon.ico",
         titleBarStyle: 'hidden', // fullscreen - titlebar
         webPreferences: {
             devTools: false,
