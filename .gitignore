@@ -134,3 +134,4 @@ games.json
 test.py
 package-lock.json
 build/.DS_Store
+.DS_Store

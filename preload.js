@@ -7,7 +7,7 @@ const path = require('path')
 window.addEventListener('DOMContentLoaded', () => {
 
     const fillSaveGame = async () => {
-        let games = JSON.parse(fs.readFileSync(path.join("/tmp", "games.json")))
+        let games = JSON.parse(fs.readFileSync(games_path))
         document.querySelector('.save-game-list').innerHTML = ''
         for (let [i, name] of Object.keys(games).entries()) {
             let saveGameItemTemplate = document.querySelector('#save-game-item-template').content
@@ -241,7 +241,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     const getGameData = async (gameName) => {
-        gamesData = JSON.parse(fs.readFileSync(path.join("/tmp", "games.json"), 'utf-8'))[gameName]
+        gamesData = JSON.parse(fs.readFileSync(games_path, 'utf-8'))[gameName]
         players = gamesData['players']
         gameBoard = gamesData['gameBoard']
         xlsxPath = gamesData['xlsxPath']
@@ -250,7 +250,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const setGameData = async (params) => {
         let [gameName, currentXlsxPath, currentPlayers, currentGameBoard, currentGameDate, currentTimerSeconds] = Object.values(params)
-        gamesData = JSON.parse(fs.readFileSync(path.join("/tmp", "games.json"), 'utf-8'))
+        gamesData = JSON.parse(fs.readFileSync(games_path, 'utf-8'))
         if (!(gameName in gamesData)) {
             gamesData[gameName] = {
                 'gameName': null,
@@ -267,7 +267,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if (currentGameBoard != null) gamesData[gameName]['gameBoard'] = currentGameBoard
         if (currentGameDate != null) gamesData[gameName]['gameDate'] = currentGameDate
         if (currentTimerSeconds != null) gamesData[gameName]['timerSeconds'] = currentTimerSeconds
-        fs.writeFileSync(path.join("/tmp", "games.json"), JSON.stringify(gamesData))
+        fs.writeFileSync(games_path, JSON.stringify(gamesData))
     }
 
     const fillQuestionButtons = async () => {
@@ -343,9 +343,9 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     const deleteGameData = async (gameName) => {
-        gamesData = JSON.parse(fs.readFileSync(path.join("/tmp", "games.json"), 'utf-8'))
+        gamesData = JSON.parse(fs.readFileSync(games_path, 'utf-8'))
         delete gamesData[gameName]
-        fs.writeFileSync(path.join("/tmp", "games.json"), JSON.stringify(gamesData))
+        fs.writeFileSync(games_path, JSON.stringify(gamesData))
     }
 
     const fillPedestal = async () => {
@@ -410,15 +410,18 @@ window.addEventListener('DOMContentLoaded', () => {
     let faqStartGameButton = document.querySelector("#faq-start-game-button")
     let closeButton = document.querySelector("#close-button")
     let endGameButton = document.querySelector('.end-game-button')
-
+    const games_path = path.join("/tmp", "games.json")
+    if (navigator.platform == "Win32") {
+        const games_path = "games.json"  
+    } 
     let timerSeconds = 10
     let currentSliderNumber = 0
     sliderPages.textContent = `${currentSliderNumber + 1} / ${sliders.length}`
 
-
-    fs.access(path.join("/tmp", "games.json"), (e) => {
+    console.log(navigator.platform)
+    fs.access(games_path, (e) => {
         if (e) {
-            fs.writeFileSync(path.join("/tmp", "games.json"), JSON.stringify({}))
+            fs.writeFileSync(games_path, JSON.stringify({}))
         }
     });
 
@@ -746,7 +749,7 @@ window.addEventListener('DOMContentLoaded', () => {
             alert('Введите название игры!')
         } else if (Object.keys(players).length < 2) {
             alert('Введите минимум двух игроков')
-        } else if (gameName.trim() in JSON.parse(fs.readFileSync(path.join("/tmp", "games.json"), 'utf-8'))) {
+        } else if (gameName.trim() in JSON.parse(fs.readFileSync(games_path, 'utf-8'))) {
             alert('Игра с таким названием уже существует!')
             gameName = document.querySelector('#input-game-name-label').value = ""
         } else {
