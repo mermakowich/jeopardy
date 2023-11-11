@@ -10,10 +10,10 @@ function createWindow() {
         center: true,
         resizable: true,
         fullscreen: true,
-        icon: "icon.ico",
+        icon: "./build/icon.ico",
         titleBarStyle: 'hidden', // fullscreen - titlebar
         webPreferences: {
-            devTools: false,
+            devTools: true,
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: true
         }

@@ -1,7 +1,5 @@
 // const { dialog } = require('electron')
 const XLSX = require('xlsx')
-const sqlite3 = require('sqlite3').verbose()
-const domain = require("domain")
 const fs = require('fs')
 const path = require('path')
 
@@ -9,7 +7,7 @@ const path = require('path')
 window.addEventListener('DOMContentLoaded', () => {
 
     const fillSaveGame = async () => {
-        let games = JSON.parse(fs.readFileSync('games.json'))
+        let games = JSON.parse(fs.readFileSync(path.join("/tmp", "games.json")))
         document.querySelector('.save-game-list').innerHTML = ''
         for (let [i, name] of Object.keys(games).entries()) {
             let saveGameItemTemplate = document.querySelector('#save-game-item-template').content
@@ -243,7 +241,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     const getGameData = async (gameName) => {
-        gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))[gameName]
+        gamesData = JSON.parse(fs.readFileSync(path.join("/tmp", "games.json"), 'utf-8'))[gameName]
         players = gamesData['players']
         gameBoard = gamesData['gameBoard']
         xlsxPath = gamesData['xlsxPath']
@@ -252,7 +250,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const setGameData = async (params) => {
         let [gameName, currentXlsxPath, currentPlayers, currentGameBoard, currentGameDate, currentTimerSeconds] = Object.values(params)
-        gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))
+        gamesData = JSON.parse(fs.readFileSync(path.join("/tmp", "games.json"), 'utf-8'))
         if (!(gameName in gamesData)) {
             gamesData[gameName] = {
                 'gameName': null,
@@ -269,7 +267,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if (currentGameBoard != null) gamesData[gameName]['gameBoard'] = currentGameBoard
         if (currentGameDate != null) gamesData[gameName]['gameDate'] = currentGameDate
         if (currentTimerSeconds != null) gamesData[gameName]['timerSeconds'] = currentTimerSeconds
-        fs.writeFileSync('games.json', JSON.stringify(gamesData))
+        fs.writeFileSync(path.join("/tmp", "games.json"), JSON.stringify(gamesData))
     }
 
     const fillQuestionButtons = async () => {
@@ -340,14 +338,14 @@ window.addEventListener('DOMContentLoaded', () => {
         const reader = XLSX.readFile(path)
         questions = []
         answers = []
-        XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[0]]).reverse().forEach((res) => { console.log(res); questions.push(res) })
+        XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[0]]).reverse().forEach((res) => { questions.push(res) })
         XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[1]]).reverse().forEach((res) => { answers.push(res) })
     }
 
     const deleteGameData = async (gameName) => {
-        gamesData = JSON.parse(fs.readFileSync('games.json', 'utf-8'))
+        gamesData = JSON.parse(fs.readFileSync(path.join("/tmp", "games.json"), 'utf-8'))
         delete gamesData[gameName]
-        fs.writeFileSync('games.json', JSON.stringify(gamesData))
+        fs.writeFileSync(path.join("/tmp", "games.json"), JSON.stringify(gamesData))
     }
 
     const fillPedestal = async () => {
@@ -418,9 +416,9 @@ window.addEventListener('DOMContentLoaded', () => {
     sliderPages.textContent = `${currentSliderNumber + 1} / ${sliders.length}`
 
 
-    fs.access("games.json", (e) => {
+    fs.access(path.join("/tmp", "games.json"), (e) => {
         if (e) {
-            fs.writeFileSync("games.json", JSON.stringify({}))
+            fs.writeFileSync(path.join("/tmp", "games.json"), JSON.stringify({}))
         }
     });
 
@@ -746,9 +744,9 @@ window.addEventListener('DOMContentLoaded', () => {
             alert('Выберите файл для загрузки!')
         } else if (gameName.trim() === '') {
             alert('Введите название игры!')
-        } else if (players.length < 2) {
+        } else if (Object.keys(players).length < 2) {
             alert('Введите минимум двух игроков')
-        } else if (gameName.trim() in JSON.parse(fs.readFileSync('games.json', 'utf-8'))) {
+        } else if (gameName.trim() in JSON.parse(fs.readFileSync(path.join("/tmp", "games.json"), 'utf-8'))) {
             alert('Игра с таким названием уже существует!')
             gameName = document.querySelector('#input-game-name-label').value = ""
         } else {
