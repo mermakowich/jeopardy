@@ -13,7 +13,7 @@ function createWindow() {
         icon: "./build/icon.ico",
         titleBarStyle: 'hidden', // fullscreen - titlebar
         webPreferences: {
-            devTools: true,
+            devTools: false,
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: true
         }
