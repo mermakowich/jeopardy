@@ -410,15 +410,14 @@ window.addEventListener('DOMContentLoaded', () => {
     let faqStartGameButton = document.querySelector("#faq-start-game-button")
     let closeButton = document.querySelector("#close-button")
     let endGameButton = document.querySelector('.end-game-button')
-    const games_path = path.join("/tmp", "games.json")
+    let games_path = path.join("/tmp", "games.json")
     if (navigator.platform == "Win32") {
-        const games_path = "games.json"  
-    } 
+        games_path = "games.json"  
+    }
     let timerSeconds = 10
     let currentSliderNumber = 0
     sliderPages.textContent = `${currentSliderNumber + 1} / ${sliders.length}`
 
-    console.log(navigator.platform)
     fs.access(games_path, (e) => {
         if (e) {
             fs.writeFileSync(games_path, JSON.stringify({}))
