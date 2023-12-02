@@ -10,24 +10,26 @@ window.addEventListener('DOMContentLoaded', () => {
         let games = JSON.parse(fs.readFileSync(games_path))
         document.querySelector('.save-game-list').innerHTML = ''
         for (let [i, name] of Object.keys(games).entries()) {
-            let saveGameItemTemplate = document.querySelector('#save-game-item-template').content
-            let saveGameItem = saveGameItemTemplate.querySelector('li')
-            let clonedSaveGameItem = saveGameItem.cloneNode(true)
-            let clonedInput = clonedSaveGameItem.querySelector('input')
-            clonedInput.value = name
-            clonedSaveGameItem.dataset.gameName = name
-            clonedSaveGameItem.querySelector('.game-name').innerHTML = `${name} (${games[name]['gameDate']})`
-            clonedSaveGameItem.querySelector('.delete-save-game-button').addEventListener("click", (e) => {
-                e.preventDefault()
-                if ("save-game-item" === e.target.parentElement.classList.value) {
-                    e.target.parentElement.remove()
-                    deleteGameData(e.target.parentElement.dataset.gameName)
-                } else {
-                    e.target.parentElement.parentElement.remove()
-                    deleteGameData(e.target.parentElement.parentElement.dataset.gameName)
-                }
-            })
-            document.querySelector('.save-game-list').appendChild(clonedSaveGameItem)
+            if (name != 'activation') {
+                let saveGameItemTemplate = document.querySelector('#save-game-item-template').content
+                let saveGameItem = saveGameItemTemplate.querySelector('li')
+                let clonedSaveGameItem = saveGameItem.cloneNode(true)
+                let clonedInput = clonedSaveGameItem.querySelector('input')
+                clonedInput.value = name
+                clonedSaveGameItem.dataset.gameName = name
+                clonedSaveGameItem.querySelector('.game-name').innerHTML = `${name} (${games[name]['gameDate']})`
+                clonedSaveGameItem.querySelector('.delete-save-game-button').addEventListener("click", (e) => {
+                    e.preventDefault()
+                    if ("save-game-item" === e.target.parentElement.classList.value) {
+                        e.target.parentElement.remove()
+                        deleteGameData(e.target.parentElement.dataset.gameName)
+                    } else {
+                        e.target.parentElement.parentElement.remove()
+                        deleteGameData(e.target.parentElement.parentElement.dataset.gameName)
+                    }
+                })
+                document.querySelector('.save-game-list').appendChild(clonedSaveGameItem)
+            }
         }
     }
 
@@ -212,7 +214,9 @@ window.addEventListener('DOMContentLoaded', () => {
                         btns.push(btn.disabled)
                     })
                 }
-                if (btns.every((e) => { return e })) {
+                if (btns.every((e) => {
+                    return e
+                })) {
                     stopQuestionTimer()
                     backToFieldButton.style.visibility = 'visible'
                     for (playerCard of document.querySelector('.players-game-frame').querySelectorAll('.player-question-card')) {
@@ -261,7 +265,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 'timerSeconds': null
             }
         }
-
+        gamesData['activation'] += 1
         if (currentXlsxPath != null) gamesData[gameName]['xlsxPath'] = currentXlsxPath
         if (currentPlayers != null) gamesData[gameName]['players'] = currentPlayers
         if (currentGameBoard != null) gamesData[gameName]['gameBoard'] = currentGameBoard
@@ -338,8 +342,12 @@ window.addEventListener('DOMContentLoaded', () => {
         const reader = XLSX.readFile(path)
         questions = []
         answers = []
-        XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[0]]).reverse().forEach((res) => { questions.push(res) })
-        XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[1]]).reverse().forEach((res) => { answers.push(res) })
+        XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[0]]).reverse().forEach((res) => {
+            questions.push(res)
+        })
+        XLSX.utils.sheet_to_json(reader.Sheets[reader.SheetNames[1]]).reverse().forEach((res) => {
+            answers.push(res)
+        })
     }
 
     const deleteGameData = async (gameName) => {
@@ -351,7 +359,9 @@ window.addEventListener('DOMContentLoaded', () => {
     const fillPedestal = async () => {
         let stringScores = Object.values(players)
         let playersCopy = players
-        let scores = stringScores.map(n => { return parseInt(n, 10) })
+        let scores = stringScores.map(n => {
+            return parseInt(n, 10)
+        })
         scores.sort((a, b) => a - b)
         scores = scores.reverse()
         document.querySelector('.first-place-player-name').innerHTML = Object.keys(playersCopy).find(key => playersCopy[key] === scores[0])
@@ -412,17 +422,22 @@ window.addEventListener('DOMContentLoaded', () => {
     let endGameButton = document.querySelector('.end-game-button')
     let games_path = path.join("/tmp", "games.json")
     if (navigator.platform == "Win32") {
-        games_path = "games.json"  
+        games_path = "games.json"
     }
+
     let timerSeconds = 10
     let currentSliderNumber = 0
     sliderPages.textContent = `${currentSliderNumber + 1} / ${sliders.length}`
 
     fs.access(games_path, (e) => {
         if (e) {
-            fs.writeFileSync(games_path, JSON.stringify({}))
+            fs.writeFileSync(games_path, JSON.stringify({'activation': 0}))
         }
     });
+
+    gamesData = JSON.parse(fs.readFileSync(games_path, 'utf-8'))
+    fs.writeFileSync(games_path, JSON.stringify(gamesData))
+
 
     document.addEventListener("mousedown", (e) => {
         let section_index = 0
@@ -751,6 +766,8 @@ window.addEventListener('DOMContentLoaded', () => {
         } else if (gameName.trim() in JSON.parse(fs.readFileSync(games_path, 'utf-8'))) {
             alert('Игра с таким названием уже существует!')
             gameName = document.querySelector('#input-game-name-label').value = ""
+        } else if (JSON.parse(fs.readFileSync(games_path, 'utf-8'))['activation'] >= 3) {
+            alert('Пробные игры закончились!\nДля покупки полной версии обратитесь к разработчику!\nСайт платформы: jeopardy.site')
         } else {
             timerSeconds = inputRangeField.value
             tabs.forEach((tab) => {
